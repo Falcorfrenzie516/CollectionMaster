@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Card Collection Prototype</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="controls">
+      <div>
+        <p class="eyebrow">CARD TEST LAB</p>
+        <h1>Dynamic Card Prototype</h1>
+        <p class="sub">One card component. The game supplies the name, artwork, income, and tier.</p>
+      </div>
+
+      <div class="tier-buttons" aria-label="Choose card tier">
+        <button data-tier="basic" class="active">Basic</button>
+        <button data-tier="gold">Gold</button>
+        <button data-tier="diamond">Diamond</button>
+        <button data-tier="rainbow">Rainbow</button>
+      </div>
+
+      <div class="test-controls">
+        <label>
+          Base income
+          <input id="baseIncome" type="number" min="1" step="1" value="10" />
+        </label>
+        <label>
+          Rank
+          <input id="rank" type="number" min="1" step="1" value="1" />
+        </label>
+      </div>
+
+      <div class="readout">
+        <span>Tier multiplier</span>
+        <strong id="multiplier">1×</strong>
+        <span>Rendered income</span>
+        <strong id="renderedIncome">$10 / sec</strong>
+      </div>
+    </section>
+
+    <section class="stage">
+      <article id="card" class="card tier-basic">
+        <div class="card-art">
+          <img src="ankylosaurus.png" alt="Ankylosaurus" />
+          <div class="art-shade"></div>
+        </div>
+
+        <header class="nameplate">
+          <span id="cardName">ANKYLOSAURUS</span>
+        </header>
+
+        <div class="tier-mark" id="tierMark">BASIC</div>
+
+        <footer class="income-medallion">
+          <span class="money">$</span>
+          <span id="cardIncome">10</span>
+          <span class="per">/ sec</span>
+        </footer>
+
+        <div class="shine"></div>
+        <div class="sparkles" aria-hidden="true"></div>
+      </article>
+
+      <p class="hint">This is the same component the pack opener and collection book can reuse at different sizes.</p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
