@@ -1,0 +1,1 @@
+export const TOKENS=[{id:"the_collector",name:"The Collector",source:"starter_pack_1",permanent:true,survivesPrestige:true}];

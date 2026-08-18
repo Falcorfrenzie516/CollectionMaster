@@ -1,0 +1,5 @@
+import{TUNING}from"../config/tuning.js";import{DINOSAURS}from"../collections/dinosaurs/cards.js";import{ENVIRONMENTS}from"../environments/environments.js";import{loadSave,saveGame,restartGame}from"./storage.js";
+let s=loadSave(),$=x=>document.getElementById(x);
+function render(){$("wallet").textContent=`$${s.wallet.toLocaleString()}`;$("packs").textContent=`${s.unopenedPacks} / ${TUNING.unopenedPackCap} packs`;$("start").disabled=s.started;$("debug").textContent=JSON.stringify({cards:DINOSAURS.length,environments:ENVIRONMENTS.length,pathNodes:TUNING.pathNodes,conveyorSeconds:TUNING.conveyorSpawnSeconds,token:s.equippedToken},null,2)}
+$("start").onclick=()=>{s.started=true;s.unopenedPacks=2;s.tokens=["the_collector"];s.equippedToken="the_collector";saveGame(s);render();alert("Foundation test loaded: 2 starter packs + The Collector token.")};
+$("restart").onclick=()=>{if(confirm("Restart Collection Master? This clears the local test save.")){restartGame();s=loadSave();render()}};render();

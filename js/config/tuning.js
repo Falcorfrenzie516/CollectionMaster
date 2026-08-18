@@ -1,0 +1,20 @@
+export const TUNING={
+offlineCapHours:6,
+unopenedPackCap:10,
+sortingTableCap:40,
+defaultPackCards:4,
+starterPackCount:2,
+conveyorSpawnSeconds:10,
+luckStartPercent:0,
+luckMaxPercent:200,
+copiesToMax:5,
+maxMultiplier:3,
+postMaxSellPercent:50,
+pathRegions:6,
+nodesPerRegion:9,
+pathNodes:54,
+firstExpeditionAutoSendSeconds:10,
+firstExpeditionCompensationCards:5,
+firstExpeditionGuaranteedHolographic:1,
+targetFirstRunDays:[3,5]
+};
