@@ -1,11 +1,145 @@
-<!doctype html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Collection Master</title><link rel="stylesheet" href="css/stage4.css?v=4.1"></head><body><div class="build-badge">BUILD 4.1</div>
-<header><div><b>COLLECTION MASTER</b><small>COLLECTOR ROOM</small></div><div class="wallet"><span>BALANCE</span><strong id="money">$0</strong><small id="income">$0 / sec</small></div></header>
-<nav><button class="tab active" data-view="home">HOME</button><button class="tab" data-view="path">PATH</button><button class="tab" data-view="table">TABLE</button><button class="tab" data-view="conveyor">CONVEYOR</button><button class="tab" data-view="expeditions">EXPEDITIONS</button><button class="tab" data-view="collections">COLLECTIONS</button><button class="tab" data-view="events">EVENTS</button><button class="tab" data-view="achievements">ACHIEVEMENTS</button><button class="tab" data-view="tokens">TOKENS</button></nav>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Collection Master</title>
+  <link rel="stylesheet" href="css/stage4-2.css?v=4.2">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <strong>COLLECTION MASTER</strong>
+    <span>COLLECTOR ROOM</span>
+  </div>
+  <div class="wallet">
+    <small>BALANCE</small>
+    <strong id="money">$0</strong>
+    <span id="income">$0 / sec</span>
+  </div>
+</header>
+
+<nav class="nav-wrap">
+  <div class="nav-scroll">
+    <button class="tab active" data-view="home">HOME</button>
+    <button class="tab" data-view="path">PATH</button>
+    <button class="tab" data-view="table">TABLE</button>
+    <button class="tab" data-view="conveyor">CONVEYOR</button>
+    <button class="tab" data-view="expeditions">EXPEDITIONS</button>
+    <button class="tab" data-view="collections">COLLECTIONS</button>
+    <button class="tab" data-view="events">EVENTS</button>
+    <button class="tab" data-view="achievements">ACHIEVEMENTS</button>
+    <button class="tab" data-view="tokens">TOKENS</button>
+  </div>
+</nav>
+
 <main>
-<section id="view-home" class="view active"><div class="room"><div class="title"><div><p>WELCOME HOME, COLLECTOR</p><h1>Your Collection Room</h1></div><button id="start">START COLLECTING</button></div>
-<div class="shelves"><button id="binder" class="binder">🦖<strong>DINOSAURS</strong><small id="binderStatus">0 discovered</small></button><div class="binder event">🎄<strong>CHRISTMAS</strong><small>Event Book</small></div><div class="binder void">🌌<strong>VOID</strong><small>Future Event</small></div><div class="slot">EMPTY</div><div class="slot">EMPTY</div><div class="slot">LOCKED</div><div class="slot">LOCKED</div><div class="slot">LOCKED</div><div class="slot">LOCKED</div><div class="slot">LOCKED</div></div>
-<div class="desk"><button id="deskPacks" class="deskobj packs"><span>📦📦📦</span><b>PACK PILE</b><small id="packHome">0 / 10</small></button><button id="deskSort" class="deskobj sort"><span>🃏</span><b>TO BE SORTED</b><small id="sortHome">0 / 40</small></button><button id="deskToken" class="deskobj token"><span>CM</span><b>TOKEN</b></button><button id="deskBook" class="deskobj book"><span>DINOSAURS</span><b>OPEN BOOK</b></button></div>
-<div class="quick"><button data-jump="path">🗺️ CONTINUE PATH</button><button data-jump="conveyor">📦 WATCH CONVEYOR</button><button data-jump="expeditions">🏕️ EXPEDITIONS</button><button data-jump="achievements">🏆 ACHIEVEMENTS</button></div></div></section>
+<section id="view-home" class="view active">
+  <div class="room">
+    <div class="ambient-light lamp-glow"></div>
+    <div class="ambient-light shelf-glow"></div>
+
+    <div class="room-header">
+      <div>
+        <p class="eyebrow">WELCOME HOME, COLLECTOR</p>
+        <h1>Your Collection Room</h1>
+      </div>
+      <button id="start" class="primary">START COLLECTING</button>
+    </div>
+
+    <div class="back-wall">
+      <div class="wall-art frame-one"></div>
+      <div class="wall-art frame-two"></div>
+
+      <div class="shelving">
+        <div class="shelf-plank top"></div>
+        <div class="shelf-row">
+          <button id="binder" class="binder realistic dino">
+            <span class="binder-spine">DINOSAURS</span>
+            <span class="binder-cover-icon">🦖</span>
+            <small id="binderStatus">0 discovered</small>
+          </button>
+
+          <button class="binder realistic christmas">
+            <span class="binder-spine">CHRISTMAS</span>
+            <span class="binder-cover-icon">🎄</span>
+            <small>Event Book</small>
+          </button>
+
+          <button class="binder realistic void">
+            <span class="binder-spine">VOID</span>
+            <span class="binder-cover-icon">🌌</span>
+            <small>Future Event</small>
+          </button>
+
+          <div class="empty-slot">EMPTY</div>
+          <div class="empty-slot">EMPTY</div>
+        </div>
+
+        <div class="shelf-plank"></div>
+
+        <div class="shelf-row lower">
+          <div class="empty-slot locked">LOCKED</div>
+          <div class="empty-slot locked">LOCKED</div>
+          <div class="empty-slot locked">LOCKED</div>
+          <div class="empty-slot locked">LOCKED</div>
+          <div class="empty-slot locked">LOCKED</div>
+        </div>
+        <div class="shelf-plank bottom"></div>
+      </div>
+
+      <div class="decor decor-plant">🪴</div>
+      <div class="decor decor-lamp">💡</div>
+    </div>
+
+    <div class="desk-scene">
+      <div class="desk-edge"></div>
+
+      <button id="deskPacks" class="prop pack-prop">
+        <div class="pack-card p1">📦</div>
+        <div class="pack-card p2">📦</div>
+        <div class="pack-card p3">📦</div>
+        <span class="prop-label">PACK PILE</span>
+        <strong id="packHome">0 / 10</strong>
+      </button>
+
+      <button id="deskSort" class="prop sort-prop">
+        <div class="loose-card c1">🃏</div>
+        <div class="loose-card c2">🃏</div>
+        <div class="loose-card c3">🃏</div>
+        <span class="prop-label">TO BE SORTED</span>
+        <strong id="sortHome">0 / 40</strong>
+      </button>
+
+      <button id="deskToken" class="prop token-prop">
+        <div class="token-figure" id="homeToken">CM</div>
+        <div class="token-base"></div>
+        <span class="prop-label">TOKEN</span>
+      </button>
+
+      <button id="deskBook" class="prop book-prop">
+        <div class="book-shadow"></div>
+        <div class="physical-book">
+          <div class="book-band">DINOSAURS</div>
+          <div class="book-emblem">🦴</div>
+        </div>
+        <span class="prop-label">OPEN BOOK</span>
+      </button>
+
+      <div class="desk-details mug">☕</div>
+      <div class="desk-details lamp">🕯️</div>
+      <div class="desk-details note">COLLECT<br>TRADE<br>MASTER</div>
+    </div>
+
+    <div class="quick">
+      <button data-jump="path">🗺️ CONTINUE PATH</button>
+      <button data-jump="conveyor">📦 WATCH CONVEYOR</button>
+      <button data-jump="expeditions">🏕️ EXPEDITIONS</button>
+      <button data-jump="achievements">🏆 ACHIEVEMENTS</button>
+    </div>
+  </div>
+</section>
+
 <section id="view-path" class="view"><div class="panel"><h2>Dinosaurs Path</h2><div class="path"><div class="line"></div><i>1</i><i>💰</i><i>🃏</i><i>📦</i><i>🏕️</i><i>✨</i><i>🏆</i><span id="pathToken">CM</span></div><div class="stats"><b id="pathProgress">0 / 54</b><b id="discovery">0 / 84</b></div></div></section>
 <section id="view-table" class="view"><div class="panel"><h2>Dinosaur Book</h2><div class="table"><div class="bookopen"><div class="page"><div id="bookCards">Your Book is empty.<br>Open a Starter Pack.</div></div><div class="page silhouettes">?<br>?<br>?<br>?</div></div><aside><div><b>UNOPENED PACKS</b><strong id="packCount">0 / 10</strong><button id="openPack">OPEN PACK</button></div><div><b>SORTING TABLE</b><strong id="sortCount">0 / 40</strong><button id="sortAll">SORT ALL</button></div></aside></div></div></section>
 <section id="view-conveyor" class="view"><div class="panel"><h2>Conveyor Belt</h2><div class="upgrades"><button>RARITY<br><small>Lv.0</small></button><button>SPEED<br><small>10s</small></button><button>LUCK<br><small>0%</small></button></div><div class="conveyor"><div id="belt" class="belt"></div></div></div></section>
@@ -15,6 +149,10 @@
 <section id="view-achievements" class="view"><div class="panel"><h2>Achievements</h2><div class="cards"><article>???<small> SECRET</small></article><article>???<small> SECRET</small></article><article>WELCOME TO JURASSIC PARK</article><article>MUST GO FASTER</article><article>WHEN DINOSAURS RULED THE EARTH</article></div></div></section>
 <section id="view-tokens" class="view"><div class="panel"><h2>Your Tokens</h2><div class="cards"><article><div class="tok">CM</div><h3>The Collector</h3></article><article class="locked">?<h3>Locked</h3></article></div></div></section>
 </main>
+
 <button id="restart" class="restart">RESTART TEST SAVE</button>
 <div id="modal" class="modal hidden"><div class="modalbox"><button id="close">×</button><div id="modalContent"></div></div></div>
-<script type="module" src="js/stage4.js?v=4.1"></script></body></html>
+<div class="build-badge">BUILD 4.2</div>
+<script type="module" src="js/stage4-2.js?v=4.2"></script>
+</body>
+</html>
