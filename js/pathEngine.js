@@ -45,12 +45,19 @@ export class PathEngine {
 
     el.innerHTML = `
       <div class="environment-sky"></div>
+      <div class="environment-light-rays"></div>
       <div class="environment-back"></div>
       <div class="environment-mid"></div>
-      <div class="environment-water"></div>
+      <div class="environment-water">
+        <div class="water-sheen"></div>
+        <div class="water-ripples"></div>
+      </div>
       <div class="environment-ground"></div>
+      <div class="ground-detail"></div>
       <div class="environment-front"></div>
+      <div class="canopy-shadow"></div>
       <div class="environment-fog"></div>
+      <div class="atmosphere-particles"></div>
       <div class="region-label">
         <span>REGION ${index+1}</span>
         <strong>${region.name}</strong>
@@ -59,7 +66,16 @@ export class PathEngine {
       <div class="landmark">${region.landmark}</div>
     `;
 
+    const atmosphere = region.atmosphere || {};
+    el.style.setProperty("--fog-strength", atmosphere.fog ?? .25);
+    el.dataset.particles = atmosphere.particles || "none";
+    el.dataset.wind = atmosphere.wind || "still";
+    el.dataset.waterMotion = atmosphere.waterMotion || "none";
+    el.dataset.parallax = atmosphere.parallax === false ? "off" : "on";
+    if (atmosphere.lightRays) el.classList.add("has-light-rays");
+
     this.decorateRegion(el, region, index);
+    this.decorateAtmosphere(el, region, index);
     return el;
   }
 
@@ -115,6 +131,53 @@ export class PathEngine {
       bridge.style.top = "55%";
       el.querySelector(".environment-front").appendChild(bridge);
     }
+  }
+
+
+  decorateAtmosphere(el, region, regionIndex) {
+    const atmosphere = region.atmosphere || {};
+    const particleType = atmosphere.particles || "none";
+    const layer = el.querySelector(".atmosphere-particles");
+    if (!layer || particleType === "none") return;
+
+    const counts = {
+      fireflies: 20,
+      pollen: 26,
+      dust: 22,
+      mist: 12,
+      embers: 28
+    };
+    const count = counts[particleType] || 16;
+
+    for (let i=0; i<count; i++) {
+      const p = document.createElement("i");
+      p.className = `particle particle-${particleType}`;
+
+      const rx = this.seeded(regionIndex*300+i, 20);
+      const ry = this.seeded(regionIndex*300+i, 21);
+      const rs = this.seeded(regionIndex*300+i, 22);
+      const rd = this.seeded(regionIndex*300+i, 23);
+
+      p.style.left = `${2 + rx*96}%`;
+      p.style.top = `${4 + ry*92}%`;
+      p.style.setProperty("--particle-scale", `${.55 + rs*1.35}`);
+      p.style.setProperty("--particle-delay", `${-rd*7}s`);
+      p.style.setProperty("--particle-duration", `${4.5 + rs*6}s`);
+      layer.appendChild(p);
+    }
+  }
+
+  updateParallax(scroller) {
+    if (!scroller) return;
+    const viewportCenter = scroller.getBoundingClientRect().top + scroller.clientHeight/2;
+
+    this.regionsEl.querySelectorAll(".path-region").forEach(region => {
+      if (region.dataset.parallax === "off") return;
+      const rect = region.getBoundingClientRect();
+      const center = rect.top + rect.height/2;
+      const normalized = Math.max(-1, Math.min(1, (center - viewportCenter) / scroller.clientHeight));
+      region.style.setProperty("--parallax", normalized.toFixed(3));
+    });
   }
 
   nodePosition(node) {
