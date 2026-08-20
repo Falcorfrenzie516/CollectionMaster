@@ -19,7 +19,8 @@ export const dinosaurPathTheme = {
       lighting: "dappled",
       palette: ["#0e1b12","#1e3b24","#345d37","#7fa069"],
       props: ["trees","ferns","fallenLogs","rocks"],
-      landmark: "FERN GATE"
+      landmark: "FERN GATE",
+      atmosphere: { particles:"fireflies", fog:.42, wind:"gentle", waterMotion:"slow", lightRays:true, parallax:true }
     },
     {
       id: "fern-plains",
@@ -30,7 +31,8 @@ export const dinosaurPathTheme = {
       lighting: "open",
       palette: ["#1d2a15","#40562b","#71804a","#9b9d61"],
       props: ["ferns","grasses","rocks","water"],
-      landmark: "OLD CROSSING"
+      landmark: "OLD CROSSING",
+      atmosphere: { particles:"pollen", fog:.16, wind:"breeze", waterMotion:"slow", lightRays:true, parallax:true }
     },
     {
       id: "rocky-highlands",
@@ -41,7 +43,8 @@ export const dinosaurPathTheme = {
       lighting: "cool",
       palette: ["#1b1e1b","#333a35","#5a5e56","#83857b"],
       props: ["cliffs","boulders","bridge","mist"],
-      landmark: "HIGH RIDGE"
+      landmark: "HIGH RIDGE",
+      atmosphere: { particles:"dust", fog:.34, wind:"gusty", waterMotion:"falls", lightRays:false, parallax:true }
     },
     {
       id: "prehistoric-wetlands",
@@ -52,7 +55,8 @@ export const dinosaurPathTheme = {
       lighting: "misty",
       palette: ["#071a19","#153836","#2c6662","#5f8373"],
       props: ["water","reeds","mud","fallenLogs","mist"],
-      landmark: "MARSH CAMP"
+      landmark: "MARSH CAMP",
+      atmosphere: { particles:"mist", fog:.72, wind:"gentle", waterMotion:"ripples", lightRays:false, parallax:true }
     },
     {
       id: "lush-valley",
@@ -63,7 +67,8 @@ export const dinosaurPathTheme = {
       lighting: "warm",
       palette: ["#102016","#27452b","#4d7447","#8aa06c"],
       props: ["trees","ferns","water","rocks"],
-      landmark: "VALLEY OVERLOOK"
+      landmark: "VALLEY OVERLOOK",
+      atmosphere: { particles:"pollen", fog:.23, wind:"breeze", waterMotion:"river", lightRays:true, parallax:true }
     },
     {
       id: "predator-territory",
@@ -74,7 +79,8 @@ export const dinosaurPathTheme = {
       lighting: "dramatic",
       palette: ["#17130f","#30241b","#57402b","#8b5e38"],
       props: ["boulders","bones","deadTrees","ash"],
-      landmark: "FINAL HUNT"
+      landmark: "FINAL HUNT",
+      atmosphere: { particles:"embers", fog:.12, wind:"gusty", waterMotion:"none", lightRays:false, parallax:true }
     }
   ],
   rewards: {
