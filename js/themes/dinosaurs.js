@@ -12,6 +12,7 @@ export const dinosaurPathTheme = {
   regions: [
     {
       id: "ancient-forest",
+      backgroundArt: "assets/images/themes/dinosaurs/ancient-forest.jpg",
       name: "ANCIENT FOREST",
       environment: "forest",
       density: "heavy",
@@ -24,6 +25,7 @@ export const dinosaurPathTheme = {
     },
     {
       id: "fern-plains",
+      backgroundArt: "assets/images/themes/dinosaurs/fern-plains.jpg",
       name: "FERN PLAINS",
       environment: "plains",
       density: "medium",
@@ -36,6 +38,7 @@ export const dinosaurPathTheme = {
     },
     {
       id: "rocky-highlands",
+      backgroundArt: "assets/images/themes/dinosaurs/rocky-highlands.jpg",
       name: "ROCKY HIGHLANDS",
       environment: "rock",
       density: "low",
@@ -48,6 +51,7 @@ export const dinosaurPathTheme = {
     },
     {
       id: "prehistoric-wetlands",
+      backgroundArt: "assets/images/themes/dinosaurs/prehistoric-wetlands.jpg",
       name: "PREHISTORIC WETLANDS",
       environment: "wetland",
       density: "medium",
@@ -60,6 +64,7 @@ export const dinosaurPathTheme = {
     },
     {
       id: "lush-valley",
+      backgroundArt: "assets/images/themes/dinosaurs/lush-valley.jpg",
       name: "LUSH VALLEY",
       environment: "valley",
       density: "heavy",
@@ -72,6 +77,7 @@ export const dinosaurPathTheme = {
     },
     {
       id: "predator-territory",
+      backgroundArt: "assets/images/themes/dinosaurs/predator-territory.jpg",
       name: "PREDATOR TERRITORY",
       environment: "badlands",
       density: "sparse",
