@@ -1,45 +1,54 @@
-# Collection Master — Build 5.5 Realism Layer Fix
+# Collection Master — Build 5.6 Theme CSS Art Fix
 
-This build fixes the reason the realistic biome art was not visible in 5.3/5.4.
+The screenshot from Build 5.5 confirmed that the animation layer was working,
+but the realistic biome images were still not being rendered.
 
-## Root cause
-The theme images were:
-- present in the repository
-- referenced correctly by `dinosaurs.js`
-- assigned correctly by `pathEngine.js`
+## What changed
 
-But `.environment-art` used a negative z-index while `.path-region` had its own
-opaque background. The realistic image was therefore rendered BEHIND the region
-and could not be seen.
+Build 5.6 removes JavaScript-based background URL assignment.
 
-## 5.5 layer order
-1. Realistic theme biome image
-2. subtle image grading
-3. dynamic water
-4. fog
-5. light rays
-6. canopy shadow
-7. optional procedural props
-8. particles
-9. winding route
-10. dynamic 54 nodes
-11. Token / labels
+Dinosaur region art is now loaded through:
 
-When a theme supplies raster art, the old CSS-built background terrain is now
-disabled rather than covering it.
+`css/themes/dinosaurs.css`
 
-## Existing 5.4 fixes retained
-- continuous serpentine route:
-  1 2 3
-  6 5 4
-  7 8 9
-  12 11 10
-- no generic node popup
-- future nodes locked and non-clickable
-- completed/current nodes remain visible
-- current-node auto-scroll remains
+That stylesheet contains direct relative URLs such as:
 
-## Upload
-Upload the whole package.
+`../../assets/images/themes/dinosaurs/ancient-forest.jpg`
 
-BUILD 5.5 confirms deployment.
+This makes the asset resolution explicit and reliable on GitHub Pages.
+
+## Architecture stays reusable
+
+The universal Path engine only sets:
+
+`data-theme="dinosaurs"`
+
+on the Path board.
+
+A future theme can add:
+
+- `css/themes/christmas.css`
+- `css/themes/void.css`
+- `css/themes/ice-age.css`
+
+with its own assets while using the same Path engine.
+
+## Existing behavior retained
+
+- 54 nodes
+- continuous serpentine layout
+- current node auto-scroll
+- future nodes locked / non-clickable
+- generic node popup removed
+- fog, light, particles, water, and parallax remain dynamic
+
+## Important upload note
+
+Upload the ENTIRE package, including:
+
+- `css/themes/dinosaurs.css`
+- `assets/images/themes/dinosaurs/`
+
+If either folder is missing, the procedural fallback will appear again.
+
+BUILD 5.6 confirms deployment.
