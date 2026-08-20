@@ -2,14 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Collection Master</title>
-  <link rel="stylesheet" href="css/stage4-5.css?v=4.5">
+  <link rel="stylesheet" href="css/stage4-6.css?v=4.6">
 </head>
 <body>
 
 <main>
-<section id="view-home" class="view active">
+<section id="view-home" class="view active home-view">
+  <div class="viewport-shell">
   <div class="art-room-shell">
     <img class="room-art" src="assets/images/collector-room-bg.png" alt="Collector Room">
 
@@ -69,6 +70,7 @@
       <button class="hotspot achievement-hotspot" data-jump="achievements" aria-label="Achievements"><span class="hover-label">ACHIEVEMENTS</span></button>
     </div>
   </div>
+  </div>
 </section>
 
 <section id="view-path" class="view"><div class="panel"><h2>Dinosaurs Path</h2><div class="path"><div class="line"></div><i>1</i><i>💰</i><i>🃏</i><i>📦</i><i>🏕️</i><i>✨</i><i>🏆</i><span id="pathToken">CM</span></div><div class="stats"><b id="pathProgress">0 / 54</b><b id="discovery">0 / 84</b></div></div></section>
@@ -83,7 +85,7 @@
 
 <button id="restart" class="restart">RESTART TEST SAVE</button>
 <div id="modal" class="modal hidden"><div class="modalbox"><button id="close">×</button><div id="modalContent"></div></div></div>
-<div class="build-badge">BUILD 4.5</div>
-<script type="module" src="js/stage4-5.js?v=4.5"></script>
+<div class="build-badge">BUILD 4.6</div>
+<script type="module" src="js/stage4-6.js?v=4.6"></script>
 </body>
 </html>
