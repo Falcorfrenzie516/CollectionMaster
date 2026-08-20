@@ -3,262 +3,171 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0b0e10">
   <title>Collection Master</title>
-  <link rel="stylesheet" href="css/stage4-12.css?v=4.12">
+  <link rel="stylesheet" href="css/stage5-1.css?v=5.1">
 </head>
 <body>
+<main id="gameRoot">
 
-<main>
-<section id="view-home" class="view active home-view">
-  <div class="viewport-shell">
-  <div class="art-room-shell">
-    <img class="room-art" src="assets/images/collector-room-bg.png" alt="Collector Room">
-
-    <div class="room-overlay">
-      <div class="integrated-ui">
-        <div class="brand">
-          <strong>COLLECTION MASTER</strong>
-          <span>COLLECTOR ROOM</span>
-        </div>
-
-        <nav class="nav-wrap">
-          <div class="nav-scroll">
-            <button class="tab active" data-view="home">HOME</button>
-            <button class="tab" data-view="path">PATH</button>
-            <button class="tab" data-view="table">TABLE</button>
-            <button class="tab" data-view="conveyor">CONVEYOR</button>
-            <button class="tab" data-view="expeditions">EXPEDITIONS</button>
-            <button class="tab" data-view="collections">COLLECTIONS</button>
-            <button class="tab" data-view="events">EVENTS</button>
-            <button class="tab" data-view="achievements">ACHIEVEMENTS</button>
-            <button class="tab" data-view="tokens">TOKENS</button>
+  <section id="view-home" class="view active home-view">
+    <div class="viewport-shell">
+      <div class="game-canvas">
+        <img class="room-art" src="assets/images/collector-room-bg.png" alt="Collector Room">
+        <div class="room-overlay">
+          <div class="integrated-ui">
+            <div class="brand">
+              <strong>COLLECTION MASTER</strong>
+              <span>COLLECTOR ROOM</span>
+            </div>
+            <nav class="nav-wrap">
+              <div class="nav-scroll">
+                <button class="tab active" data-view="home">HOME</button>
+                <button class="tab" data-view="path">PATH</button>
+                <button class="tab" data-view="table">TABLE</button>
+                <button class="tab" data-view="conveyor">CONVEYOR</button>
+                <button class="tab" data-view="expeditions">EXPEDITIONS</button>
+                <button class="tab" data-view="collections">COLLECTIONS</button>
+                <button class="tab" data-view="events">EVENTS</button>
+                <button class="tab" data-view="achievements">ACHIEVEMENTS</button>
+                <button class="tab" data-view="tokens">TOKENS</button>
+              </div>
+            </nav>
+            <div class="wallet">
+              <small>BALANCE</small>
+              <strong id="money">$0</strong>
+              <span id="income">$0 / sec</span>
+            </div>
           </div>
-        </nav>
 
-        <div class="wallet">
-          <small>BALANCE</small>
-          <strong id="money">$0</strong>
-          <span id="income">$0 / sec</span>
-        </div>
-      </div>
-
-      <button id="start" class="start-hotspot">START COLLECTING</button>
-
-      <button id="binder" class="hotspot shelf-binder" aria-label="Open Dinosaur collection">
-        <span class="status-pill" id="binderStatus">0 discovered</span>
-      </button>
-
-      <button id="deskPacks" class="hotspot pack-hotspot" aria-label="Open pack pile">
-        <span class="hover-label">PACK PILE <b id="packHome">0 / 10</b></span>
-      </button>
-
-      <button id="deskSort" class="hotspot sort-hotspot" aria-label="Open sorting table">
-        <span class="hover-label">TO BE SORTED <b id="sortHome">0 / 40</b></span>
-      </button>
-
-      <button id="deskToken" class="hotspot token-hotspot" aria-label="Open tokens">
-        <span class="hover-label">TOKENS</span>
-      </button>
-
-      <button id="deskBook" class="hotspot book-hotspot" aria-label="Open Dinosaur book">
-        <span class="hover-label">OPEN DINOSAUR BOOK</span>
-      </button>
-
-      <button class="hotspot path-hotspot" data-jump="path" aria-label="Continue Path"><span class="hover-label">CONTINUE PATH</span></button>
-      <button class="hotspot conveyor-hotspot" data-jump="conveyor" aria-label="Watch Conveyor"><span class="hover-label">WATCH CONVEYOR</span></button>
-      <button class="hotspot expedition-hotspot" data-jump="expeditions" aria-label="Expeditions"><span class="hover-label">EXPEDITIONS</span></button>
-      <button class="hotspot achievement-hotspot" data-jump="achievements" aria-label="Achievements"><span class="hover-label">ACHIEVEMENTS</span></button>
-    </div>
-  </div>
-  </div>
-</section>
-
-
-
-<section id="view-path" class="view path-page">
-  <div class="path-fixed-menu section-topbar">
-    <button class="section-home tab" data-view="home">← HOME</button>
-
-    <div class="section-tabs">
-      <button class="tab active" data-view="path">PATH</button>
-      <button class="tab" data-view="table">TABLE</button>
-      <button class="tab" data-view="conveyor">CONVEYOR</button>
-      <button class="tab" data-view="expeditions">EXPEDITIONS</button>
-      <button class="tab" data-view="collections">COLLECTIONS</button>
-      <button class="tab" data-view="events">EVENTS</button>
-      <button class="tab" data-view="achievements">ACHIEVEMENTS</button>
-      <button class="tab" data-view="tokens">TOKENS</button>
-    </div>
-
-    <div class="path-menu-balance">
-      <small>BALANCE</small>
-      <strong id="pathMoney">$0</strong>
-      <span id="pathIncome">$0 / sec</span>
-    </div>
-  </div>
-
-  <div class="path-scroll" id="pathScroll">
-    <div class="path-intro">
-      <div>
-        <p class="path-kicker">CURRENT COLLECTION</p>
-        <h2>DINOSAURS PATH</h2>
-        <p>Follow one continuous route through all six regions. Your current node opens in view automatically.</p>
-      </div>
-
-      <div class="path-summary">
-        <div>
-          <span>CARDS</span>
-          <strong id="pathCardsLive">0 / 84</strong>
-        </div>
-        <div>
-          <span>PATH</span>
-          <strong id="pathMilestonesLive">0 / 54</strong>
-        </div>
-        <div>
-          <span>CURRENT</span>
-          <strong id="pathCurrentLive">NODE 1</strong>
+          <button id="start" class="start-hotspot">START COLLECTING</button>
+          <button id="binder" class="hotspot shelf-binder" aria-label="Open Dinosaur collection"><span class="status-pill" id="binderStatus">0 discovered</span></button>
+          <button id="deskPacks" class="hotspot pack-hotspot" aria-label="Open pack pile"><span class="hover-label">PACK PILE <b id="packHome">0 / 10</b></span></button>
+          <button id="deskSort" class="hotspot sort-hotspot" aria-label="Open sorting table"><span class="hover-label">TO BE SORTED <b id="sortHome">0 / 40</b></span></button>
+          <button id="deskToken" class="hotspot token-hotspot" aria-label="Open tokens"><span class="hover-label">TOKENS</span></button>
+          <button id="deskBook" class="hotspot book-hotspot" aria-label="Open Dinosaur book"><span class="hover-label">OPEN DINOSAUR BOOK</span></button>
+          <button class="hotspot path-hotspot" data-jump="path" aria-label="Continue Path"></button>
+          <button class="hotspot conveyor-hotspot" data-jump="conveyor" aria-label="Watch Conveyor"></button>
+          <button class="hotspot expedition-hotspot" data-jump="expeditions" aria-label="Expeditions"></button>
+          <button class="hotspot achievement-hotspot" data-jump="achievements" aria-label="Achievements"></button>
         </div>
       </div>
     </div>
+  </section>
 
-    <div class="long-path-board" id="longPathBoard">
-      <svg class="long-path-svg" id="longPathSvg" aria-hidden="true"></svg>
-      <div id="pathRegions"></div>
-      <div id="pathNodes" class="path-nodes"></div>
-      <div class="path-token-piece" id="pathToken">CM</div>
+  <section id="view-path" class="view path-page">
+    <div class="path-fixed-menu">
+      <button class="section-home tab" data-view="home">← HOME</button>
+      <div class="section-tabs">
+        <button class="tab active" data-view="path">PATH</button>
+        <button class="tab" data-view="table">TABLE</button>
+        <button class="tab" data-view="conveyor">CONVEYOR</button>
+        <button class="tab" data-view="expeditions">EXPEDITIONS</button>
+        <button class="tab" data-view="collections">COLLECTIONS</button>
+        <button class="tab" data-view="events">EVENTS</button>
+        <button class="tab" data-view="achievements">ACHIEVEMENTS</button>
+        <button class="tab" data-view="tokens">TOKENS</button>
+      </div>
+      <div class="path-menu-balance">
+        <small>BALANCE</small>
+        <strong id="pathMoney">$0</strong>
+        <span id="pathIncome">$0 / sec</span>
+      </div>
     </div>
 
-    <div class="path-finale">
-      <div class="finale-card">
-        <span>🏆</span>
+    <div class="path-scroll" id="pathScroll">
+      <div class="path-intro">
         <div>
-          <small>FINAL NODE</small>
-          <strong>54 — COLLECTION PATH COMPLETE</strong>
-          <p>The next Collection unlocks from the final Path milestone.</p>
+          <p class="path-kicker">CURRENT COLLECTION</p>
+          <h2 id="pathTitle">COLLECTION PATH</h2>
+          <p id="pathDescription">One continuous route. The environment is generated from the active collection theme.</p>
+        </div>
+        <div class="path-summary">
+          <div><span>CARDS</span><strong id="pathCardsLive">0 / 84</strong></div>
+          <div><span>PATH</span><strong id="pathMilestonesLive">0 / 54</strong></div>
+          <div><span>CURRENT</span><strong id="pathCurrentLive">NODE 1</strong></div>
+        </div>
+      </div>
+
+      <div class="long-path-board" id="longPathBoard">
+        <svg class="long-path-svg" id="longPathSvg" aria-hidden="true"></svg>
+        <div id="pathRegions"></div>
+        <div id="pathNodes" class="path-nodes"></div>
+        <div class="path-token-piece" id="pathToken">CM</div>
+      </div>
+
+      <div class="path-finale">
+        <div class="finale-card">
+          <span class="finale-medallion">54</span>
+          <div>
+            <small>FINAL NODE</small>
+            <strong>COLLECTION PATH COMPLETE</strong>
+            <p>The final reward is defined by the active Path theme.</p>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
+  <section id="view-table" class="view nonhome-view">
+    <div class="section-topbar">
+      <button class="section-home tab" data-view="home">← HOME</button>
+      <div class="section-tabs">
+        <button class="tab" data-view="path">PATH</button><button class="tab active" data-view="table">TABLE</button>
+        <button class="tab" data-view="conveyor">CONVEYOR</button><button class="tab" data-view="expeditions">EXPEDITIONS</button>
+        <button class="tab" data-view="collections">COLLECTIONS</button><button class="tab" data-view="events">EVENTS</button>
+        <button class="tab" data-view="achievements">ACHIEVEMENTS</button><button class="tab" data-view="tokens">TOKENS</button>
+      </div>
+      <div class="section-title-mini">COLLECTION MASTER</div>
+    </div>
+    <div class="panel">
+      <h2>Dinosaur Book</h2>
+      <div class="table">
+        <div class="bookopen"><div class="page"><div id="bookCards">Your Book is empty.<br>Open a Starter Pack.</div></div><div class="page silhouettes">?<br>?<br>?<br>?</div></div>
+        <aside>
+          <div><b>UNOPENED PACKS</b><strong id="packCount">0 / 10</strong><button id="openPack">OPEN PACK</button></div>
+          <div><b>SORTING TABLE</b><strong id="sortCount">0 / 40</strong><button id="sortAll">SORT ALL</button></div>
+        </aside>
+      </div>
+    </div>
+  </section>
 
-<section id="view-table" class="view nonhome-view">
-<div class="section-topbar">
-  <button class="section-home tab" data-view="home">← HOME</button>
-  <div class="section-tabs">
-    <button class="tab" data-view="path">PATH</button>
-    <button class="tab" data-view="table">TABLE</button>
-    <button class="tab" data-view="conveyor">CONVEYOR</button>
-    <button class="tab" data-view="expeditions">EXPEDITIONS</button>
-    <button class="tab" data-view="collections">COLLECTIONS</button>
-    <button class="tab" data-view="events">EVENTS</button>
-    <button class="tab" data-view="achievements">ACHIEVEMENTS</button>
-    <button class="tab" data-view="tokens">TOKENS</button>
-  </div>
-  <div class="section-title-mini">COLLECTION MASTER</div>
-</div>
-<div class="panel"><h2>Dinosaur Book</h2><div class="table"><div class="bookopen"><div class="page"><div id="bookCards">Your Book is empty.<br>Open a Starter Pack.</div></div><div class="page silhouettes">?<br>?<br>?<br>?</div></div><aside><div><b>UNOPENED PACKS</b><strong id="packCount">0 / 10</strong><button id="openPack">OPEN PACK</button></div><div><b>SORTING TABLE</b><strong id="sortCount">0 / 40</strong><button id="sortAll">SORT ALL</button></div></aside></div></div></section>
-<section id="view-conveyor" class="view nonhome-view">
-<div class="section-topbar">
-  <button class="section-home tab" data-view="home">← HOME</button>
-  <div class="section-tabs">
-    <button class="tab" data-view="path">PATH</button>
-    <button class="tab" data-view="table">TABLE</button>
-    <button class="tab" data-view="conveyor">CONVEYOR</button>
-    <button class="tab" data-view="expeditions">EXPEDITIONS</button>
-    <button class="tab" data-view="collections">COLLECTIONS</button>
-    <button class="tab" data-view="events">EVENTS</button>
-    <button class="tab" data-view="achievements">ACHIEVEMENTS</button>
-    <button class="tab" data-view="tokens">TOKENS</button>
-  </div>
-  <div class="section-title-mini">COLLECTION MASTER</div>
-</div>
-<div class="panel"><h2>Conveyor Belt</h2><div class="upgrades"><button>RARITY<br><small>Lv.0</small></button><button>SPEED<br><small>10s</small></button><button>LUCK<br><small>0%</small></button></div><div class="conveyor"><div id="belt" class="belt"></div></div></section>
-<section id="view-expeditions" class="view nonhome-view">
-<div class="section-topbar">
-  <button class="section-home tab" data-view="home">← HOME</button>
-  <div class="section-tabs">
-    <button class="tab" data-view="path">PATH</button>
-    <button class="tab" data-view="table">TABLE</button>
-    <button class="tab" data-view="conveyor">CONVEYOR</button>
-    <button class="tab" data-view="expeditions">EXPEDITIONS</button>
-    <button class="tab" data-view="collections">COLLECTIONS</button>
-    <button class="tab" data-view="events">EVENTS</button>
-    <button class="tab" data-view="achievements">ACHIEVEMENTS</button>
-    <button class="tab" data-view="tokens">TOKENS</button>
-  </div>
-  <div class="section-title-mini">COLLECTION MASTER</div>
-</div>
-<div class="panel"><h2>Expedition Camp</h2><div class="cards"><article><h3>Team 1</h3><p>First expedition unlocks at the cost threshold.</p><b>$150,000</b></article><article><h3>Easy Hunt</h3><p>Quick, Basic-focused targeted pack.</p></article><article><h3>Hard Hunt</h3><p>Longer, more expensive, better potential.</p></article></div></div></section>
-<section id="view-collections" class="view nonhome-view">
-<div class="section-topbar">
-  <button class="section-home tab" data-view="home">← HOME</button>
-  <div class="section-tabs">
-    <button class="tab" data-view="path">PATH</button>
-    <button class="tab" data-view="table">TABLE</button>
-    <button class="tab" data-view="conveyor">CONVEYOR</button>
-    <button class="tab" data-view="expeditions">EXPEDITIONS</button>
-    <button class="tab" data-view="collections">COLLECTIONS</button>
-    <button class="tab" data-view="events">EVENTS</button>
-    <button class="tab" data-view="achievements">ACHIEVEMENTS</button>
-    <button class="tab" data-view="tokens">TOKENS</button>
-  </div>
-  <div class="section-title-mini">COLLECTION MASTER</div>
-</div>
-<div class="panel"><h2>Your Binders</h2><button id="collectionDino" class="collection">🦖<b>Dinosaurs</b><small id="collectionStatus">0 / 84</small></button></div></section>
-<section id="view-events" class="view nonhome-view">
-<div class="section-topbar">
-  <button class="section-home tab" data-view="home">← HOME</button>
-  <div class="section-tabs">
-    <button class="tab" data-view="path">PATH</button>
-    <button class="tab" data-view="table">TABLE</button>
-    <button class="tab" data-view="conveyor">CONVEYOR</button>
-    <button class="tab" data-view="expeditions">EXPEDITIONS</button>
-    <button class="tab" data-view="collections">COLLECTIONS</button>
-    <button class="tab" data-view="events">EVENTS</button>
-    <button class="tab" data-view="achievements">ACHIEVEMENTS</button>
-    <button class="tab" data-view="tokens">TOKENS</button>
-  </div>
-  <div class="section-title-mini">COLLECTION MASTER</div>
-</div>
-<div class="panel"><h2>Persistent Event Books</h2><div class="cards"><article>🎄<h3>Christmas</h3><p>Snowy Path, timed packs, survives Prestige.</p></article><article>🌌<h3>The Void</h3><p>Future rotating Event Book.</p></article></div></div></section>
-<section id="view-achievements" class="view nonhome-view">
-<div class="section-topbar">
-  <button class="section-home tab" data-view="home">← HOME</button>
-  <div class="section-tabs">
-    <button class="tab" data-view="path">PATH</button>
-    <button class="tab" data-view="table">TABLE</button>
-    <button class="tab" data-view="conveyor">CONVEYOR</button>
-    <button class="tab" data-view="expeditions">EXPEDITIONS</button>
-    <button class="tab" data-view="collections">COLLECTIONS</button>
-    <button class="tab" data-view="events">EVENTS</button>
-    <button class="tab" data-view="achievements">ACHIEVEMENTS</button>
-    <button class="tab" data-view="tokens">TOKENS</button>
-  </div>
-  <div class="section-title-mini">COLLECTION MASTER</div>
-</div>
-<div class="panel"><h2>Achievements</h2><div class="cards"><article>???<small> SECRET</small></article><article>???<small> SECRET</small></article><article>WELCOME TO JURASSIC PARK</article><article>MUST GO FASTER</article><article>WHEN DINOSAURS RULED THE EARTH</article></div></div></section>
-<section id="view-tokens" class="view nonhome-view">
-<div class="section-topbar">
-  <button class="section-home tab" data-view="home">← HOME</button>
-  <div class="section-tabs">
-    <button class="tab" data-view="path">PATH</button>
-    <button class="tab" data-view="table">TABLE</button>
-    <button class="tab" data-view="conveyor">CONVEYOR</button>
-    <button class="tab" data-view="expeditions">EXPEDITIONS</button>
-    <button class="tab" data-view="collections">COLLECTIONS</button>
-    <button class="tab" data-view="events">EVENTS</button>
-    <button class="tab" data-view="achievements">ACHIEVEMENTS</button>
-    <button class="tab" data-view="tokens">TOKENS</button>
-  </div>
-  <div class="section-title-mini">COLLECTION MASTER</div>
-</div>
-<div class="panel"><h2>Your Tokens</h2><div class="cards"><article><div class="tok">CM</div><h3>The Collector</h3></article><article class="locked">?<h3>Locked</h3></article></div></div></section>
+  <section id="view-conveyor" class="view nonhome-view">
+    <div class="section-topbar"><button class="section-home tab" data-view="home">← HOME</button><div class="section-tabs"><button class="tab" data-view="path">PATH</button><button class="tab" data-view="table">TABLE</button><button class="tab active" data-view="conveyor">CONVEYOR</button><button class="tab" data-view="expeditions">EXPEDITIONS</button><button class="tab" data-view="collections">COLLECTIONS</button><button class="tab" data-view="events">EVENTS</button><button class="tab" data-view="achievements">ACHIEVEMENTS</button><button class="tab" data-view="tokens">TOKENS</button></div><div class="section-title-mini">COLLECTION MASTER</div></div>
+    <div class="panel"><h2>Conveyor Belt</h2><div class="upgrades"><button>RARITY<br><small>Lv.0</small></button><button>SPEED<br><small>10s</small></button><button>LUCK<br><small>0%</small></button></div><div class="conveyor"><div id="belt" class="belt"></div></div></div>
+  </section>
+
+  <section id="view-expeditions" class="view nonhome-view">
+    <div class="section-topbar"><button class="section-home tab" data-view="home">← HOME</button><div class="section-tabs"><button class="tab" data-view="path">PATH</button><button class="tab" data-view="table">TABLE</button><button class="tab" data-view="conveyor">CONVEYOR</button><button class="tab active" data-view="expeditions">EXPEDITIONS</button><button class="tab" data-view="collections">COLLECTIONS</button><button class="tab" data-view="events">EVENTS</button><button class="tab" data-view="achievements">ACHIEVEMENTS</button><button class="tab" data-view="tokens">TOKENS</button></div><div class="section-title-mini">COLLECTION MASTER</div></div>
+    <div class="panel"><h2>Expedition Camp</h2><div class="cards"><article><h3>Team 1</h3><p>First expedition unlocks at the cost threshold.</p><b>$150,000</b></article><article><h3>Easy Hunt</h3><p>Quick, Basic-focused targeted pack.</p></article><article><h3>Hard Hunt</h3><p>Longer, more expensive, better potential.</p></article></div></div>
+  </section>
+
+  <section id="view-collections" class="view nonhome-view">
+    <div class="section-topbar"><button class="section-home tab" data-view="home">← HOME</button><div class="section-tabs"><button class="tab" data-view="path">PATH</button><button class="tab" data-view="table">TABLE</button><button class="tab" data-view="conveyor">CONVEYOR</button><button class="tab" data-view="expeditions">EXPEDITIONS</button><button class="tab active" data-view="collections">COLLECTIONS</button><button class="tab" data-view="events">EVENTS</button><button class="tab" data-view="achievements">ACHIEVEMENTS</button><button class="tab" data-view="tokens">TOKENS</button></div><div class="section-title-mini">COLLECTION MASTER</div></div>
+    <div class="panel"><h2>Your Binders</h2><button id="collectionDino" class="collection">🦖<b>Dinosaurs</b><small id="collectionStatus">0 / 84</small></button></div>
+  </section>
+
+  <section id="view-events" class="view nonhome-view">
+    <div class="section-topbar"><button class="section-home tab" data-view="home">← HOME</button><div class="section-tabs"><button class="tab" data-view="path">PATH</button><button class="tab" data-view="table">TABLE</button><button class="tab" data-view="conveyor">CONVEYOR</button><button class="tab" data-view="expeditions">EXPEDITIONS</button><button class="tab" data-view="collections">COLLECTIONS</button><button class="tab active" data-view="events">EVENTS</button><button class="tab" data-view="achievements">ACHIEVEMENTS</button><button class="tab" data-view="tokens">TOKENS</button></div><div class="section-title-mini">COLLECTION MASTER</div></div>
+    <div class="panel"><h2>Persistent Event Books</h2><div class="cards"><article>🎄<h3>Christmas</h3><p>Future themed Path using the same engine.</p></article><article>🌌<h3>The Void</h3><p>Future themed Path using the same engine.</p></article></div></div>
+  </section>
+
+  <section id="view-achievements" class="view nonhome-view">
+    <div class="section-topbar"><button class="section-home tab" data-view="home">← HOME</button><div class="section-tabs"><button class="tab" data-view="path">PATH</button><button class="tab" data-view="table">TABLE</button><button class="tab" data-view="conveyor">CONVEYOR</button><button class="tab" data-view="expeditions">EXPEDITIONS</button><button class="tab" data-view="collections">COLLECTIONS</button><button class="tab" data-view="events">EVENTS</button><button class="tab active" data-view="achievements">ACHIEVEMENTS</button><button class="tab" data-view="tokens">TOKENS</button></div><div class="section-title-mini">COLLECTION MASTER</div></div>
+    <div class="panel"><h2>Achievements</h2><div class="cards"><article>???<small> SECRET</small></article><article>WELCOME TO JURASSIC PARK</article><article>MUST GO FASTER</article></div></div>
+  </section>
+
+  <section id="view-tokens" class="view nonhome-view">
+    <div class="section-topbar"><button class="section-home tab" data-view="home">← HOME</button><div class="section-tabs"><button class="tab" data-view="path">PATH</button><button class="tab" data-view="table">TABLE</button><button class="tab" data-view="conveyor">CONVEYOR</button><button class="tab" data-view="expeditions">EXPEDITIONS</button><button class="tab" data-view="collections">COLLECTIONS</button><button class="tab" data-view="events">EVENTS</button><button class="tab" data-view="achievements">ACHIEVEMENTS</button><button class="tab active" data-view="tokens">TOKENS</button></div><div class="section-title-mini">COLLECTION MASTER</div></div>
+    <div class="panel"><h2>Your Tokens</h2><div class="cards"><article><div class="tok">CM</div><h3>The Collector</h3></article><article class="locked">?<h3>Locked</h3></article></div></div>
+  </section>
+
 </main>
 
 <button id="restart" class="restart">RESTART TEST SAVE</button>
 <div id="modal" class="modal hidden"><div class="modalbox"><button id="close">×</button><div id="modalContent"></div></div></div>
-<div class="build-badge">BUILD 4.12</div>
-<script type="module" src="js/stage4-12.js?v=4.12"></script>
+<div class="build-badge">BUILD 5.1</div>
+
+<script type="module" src="js/stage5-1.js?v=5.1"></script>
 </body>
 </html>
