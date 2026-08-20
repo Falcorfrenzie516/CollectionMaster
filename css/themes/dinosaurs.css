@@ -1,0 +1,42 @@
+
+/* Dinosaur Path Theme — Build 5.6
+   Asset paths are resolved relative to css/themes/dinosaurs.css */
+
+#longPathBoard[data-theme="dinosaurs"] .path-region[data-region="0"] .environment-art{
+  background-image:url("../../assets/images/themes/dinosaurs/ancient-forest.jpg") !important;
+}
+#longPathBoard[data-theme="dinosaurs"] .path-region[data-region="1"] .environment-art{
+  background-image:url("../../assets/images/themes/dinosaurs/fern-plains.jpg") !important;
+}
+#longPathBoard[data-theme="dinosaurs"] .path-region[data-region="2"] .environment-art{
+  background-image:url("../../assets/images/themes/dinosaurs/rocky-highlands.jpg") !important;
+}
+#longPathBoard[data-theme="dinosaurs"] .path-region[data-region="3"] .environment-art{
+  background-image:url("../../assets/images/themes/dinosaurs/prehistoric-wetlands.jpg") !important;
+}
+#longPathBoard[data-theme="dinosaurs"] .path-region[data-region="4"] .environment-art{
+  background-image:url("../../assets/images/themes/dinosaurs/lush-valley.jpg") !important;
+}
+#longPathBoard[data-theme="dinosaurs"] .path-region[data-region="5"] .environment-art{
+  background-image:url("../../assets/images/themes/dinosaurs/predator-territory.jpg") !important;
+}
+
+/* Theme-specific color grading */
+#longPathBoard[data-theme="dinosaurs"] .path-region[data-region="0"] .environment-art{
+  filter:saturate(1.12) contrast(1.12) brightness(.92) !important;
+}
+#longPathBoard[data-theme="dinosaurs"] .path-region[data-region="1"] .environment-art{
+  filter:saturate(1.04) contrast(1.08) brightness(.93) !important;
+}
+#longPathBoard[data-theme="dinosaurs"] .path-region[data-region="2"] .environment-art{
+  filter:saturate(.92) contrast(1.14) brightness(.88) !important;
+}
+#longPathBoard[data-theme="dinosaurs"] .path-region[data-region="3"] .environment-art{
+  filter:saturate(.98) contrast(1.09) brightness(.90) !important;
+}
+#longPathBoard[data-theme="dinosaurs"] .path-region[data-region="4"] .environment-art{
+  filter:saturate(1.14) contrast(1.08) brightness(.91) !important;
+}
+#longPathBoard[data-theme="dinosaurs"] .path-region[data-region="5"] .environment-art{
+  filter:saturate(1.08) contrast(1.16) brightness(.87) !important;
+}
