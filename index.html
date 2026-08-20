@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Collection Master</title>
-  <link rel="stylesheet" href="css/stage4-7.css?v=4.7">
+  <link rel="stylesheet" href="css/stage4-8.css?v=4.8">
 </head>
 <body>
 
@@ -73,22 +73,53 @@
   </div>
 </section>
 
-<section id="view-path" class="view nonhome-view">
-<div class="section-topbar">
-  <button class="section-home tab" data-view="home">← HOME</button>
-  <div class="section-tabs">
-    <button class="tab" data-view="path">PATH</button>
-    <button class="tab" data-view="table">TABLE</button>
-    <button class="tab" data-view="conveyor">CONVEYOR</button>
-    <button class="tab" data-view="expeditions">EXPEDITIONS</button>
-    <button class="tab" data-view="collections">COLLECTIONS</button>
-    <button class="tab" data-view="events">EVENTS</button>
-    <button class="tab" data-view="achievements">ACHIEVEMENTS</button>
-    <button class="tab" data-view="tokens">TOKENS</button>
+
+<section id="view-path" class="view path-art-view">
+  <div class="path-art-shell">
+    <img class="path-art-image" src="assets/images/dinosaur-path-bg.png" alt="Dinosaur Path">
+
+    <div class="path-art-overlay">
+      <button class="path-home-hotspot tab" data-view="home" aria-label="Back Home"></button>
+
+      <button class="path-nav-hotspot path-nav-home tab" data-view="home" aria-label="Home"></button>
+      <button class="path-nav-hotspot path-nav-path tab" data-view="path" aria-label="Path"></button>
+      <button class="path-nav-hotspot path-nav-table tab" data-view="table" aria-label="Table"></button>
+      <button class="path-nav-hotspot path-nav-conveyor tab" data-view="conveyor" aria-label="Conveyor"></button>
+      <button class="path-nav-hotspot path-nav-expeditions tab" data-view="expeditions" aria-label="Expeditions"></button>
+      <button class="path-nav-hotspot path-nav-collections tab" data-view="collections" aria-label="Collections"></button>
+      <button class="path-nav-hotspot path-nav-events tab" data-view="events" aria-label="Events"></button>
+      <button class="path-nav-hotspot path-nav-achievements tab" data-view="achievements" aria-label="Achievements"></button>
+      <button class="path-nav-hotspot path-nav-tokens tab" data-view="tokens" aria-label="Tokens"></button>
+
+      <button class="path-node path-node-1" aria-label="Milestone 1"></button>
+      <button class="path-node path-node-2" aria-label="Milestone 2"></button>
+      <button class="path-node path-node-3" aria-label="Milestone 3"></button>
+      <button class="path-node path-node-4" aria-label="Milestone 4"></button>
+      <button class="path-node path-node-5" aria-label="Milestone 5"></button>
+      <button class="path-node path-node-6" aria-label="Milestone 6"></button>
+      <button class="path-node path-node-7" aria-label="Milestone 7"></button>
+      <button class="path-node path-node-8" aria-label="Milestone 8"></button>
+      <button class="path-node path-node-9" aria-label="Milestone 9"></button>
+      <button class="path-node path-node-10" aria-label="Milestone 10"></button>
+      <button class="path-node path-node-11" aria-label="Milestone 11"></button>
+      <button class="path-node path-node-12" aria-label="Milestone 12"></button>
+      <button class="path-node path-node-13" aria-label="Milestone 13"></button>
+      <button class="path-node path-node-14" aria-label="Milestone 14"></button>
+
+      <div class="path-live-balance">
+        <small>BALANCE</small>
+        <strong id="pathMoney">$0</strong>
+        <span id="pathIncome">$0 / sec</span>
+      </div>
+
+      <div class="path-progress-live">
+        <div class="cards-live" id="pathCardsLive">0 / 84</div>
+        <div class="milestones-live" id="pathMilestonesLive">0 / 54</div>
+      </div>
+    </div>
   </div>
-  <div class="section-title-mini">COLLECTION MASTER</div>
-</div>
-<div class="panel"><h2>Dinosaurs Path</h2><div class="path"><div class="line"></div><i>1</i><i>💰</i><i>🃏</i><i>📦</i><i>🏕️</i><i>✨</i><i>🏆</i><span id="pathToken">CM</span></div><div class="stats"><b id="pathProgress">0 / 54</b><b id="discovery">0 / 84</b></div></div></section>
+</section>
+
 <section id="view-table" class="view nonhome-view">
 <div class="section-topbar">
   <button class="section-home tab" data-view="home">← HOME</button>
@@ -205,7 +236,7 @@
 
 <button id="restart" class="restart">RESTART TEST SAVE</button>
 <div id="modal" class="modal hidden"><div class="modalbox"><button id="close">×</button><div id="modalContent"></div></div></div>
-<div class="build-badge">BUILD 4.7</div>
-<script type="module" src="js/stage4-7.js?v=4.7"></script>
+<div class="build-badge">BUILD 4.8</div>
+<script type="module" src="js/stage4-8.js?v=4.8"></script>
 </body>
 </html>
