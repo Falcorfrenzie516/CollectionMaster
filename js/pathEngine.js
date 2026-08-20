@@ -15,6 +15,7 @@ export class PathEngine {
     this.regionsEl.innerHTML = "";
     this.nodesEl.innerHTML = "";
     this.svgEl.innerHTML = "";
+    this.board.dataset.theme = this.theme.id || "default";
     this.board.style.setProperty("--region-height", `${this.regionHeight}px`);
     this.board.style.height = `${this.regionHeight * this.theme.regions.length}px`;
 
@@ -44,7 +45,6 @@ export class PathEngine {
     el.style.setProperty("--p4", region.palette[3]);
     if (region.backgroundArt) {
       el.classList.add("has-region-art");
-      el.dataset.backgroundArt = region.backgroundArt;
     }
 
     el.innerHTML = `
@@ -79,11 +79,6 @@ export class PathEngine {
     el.dataset.waterMotion = atmosphere.waterMotion || "none";
     el.dataset.parallax = atmosphere.parallax === false ? "off" : "on";
     if (atmosphere.lightRays) el.classList.add("has-light-rays");
-
-    if (region.backgroundArt) {
-      const art = el.querySelector(".environment-art");
-      if (art) art.style.backgroundImage = `url("${region.backgroundArt}")`;
-    }
 
     this.decorateRegion(el, region, index);
     this.decorateAtmosphere(el, region, index);
