@@ -1,51 +1,45 @@
-# Collection Master — Build 5.4
+# Collection Master — Build 5.5 Realism Layer Fix
 
-Build 5.4 addresses the three Path issues reviewed after 5.2/5.3.
+This build fixes the reason the realistic biome art was not visible in 5.3/5.4.
 
-## 1. Realism is now visible
-The Dinosaur theme's realistic biome art is now the PRIMARY environment layer.
-The procedural CSS terrain has been reduced to subtle atmospheric overlays.
+## Root cause
+The theme images were:
+- present in the repository
+- referenced correctly by `dinosaurs.js`
+- assigned correctly by `pathEngine.js`
 
-Reusable engine behavior is unchanged:
-- theme owns its region art
-- Path engine stays universal
-- fog, water, particles, light, parallax and route remain dynamic
+But `.environment-art` used a negative z-index while `.path-region` had its own
+opaque background. The realistic image was therefore rendered BEHIND the region
+and could not be seen.
 
-## 2. No node popup
-Clicking an achieved/current node no longer opens the generic "Travel node" modal.
+## 5.5 layer order
+1. Realistic theme biome image
+2. subtle image grading
+3. dynamic water
+4. fog
+5. light rays
+6. canopy shadow
+7. optional procedural props
+8. particles
+9. winding route
+10. dynamic 54 nodes
+11. Token / labels
 
-The Path engine still has a future reward-action hook, but it does nothing until
-we attach actual reward/claim behavior.
+When a theme supplies raster art, the old CSS-built background terrain is now
+disabled rather than covering it.
 
-## 3. True continuous serpentine route
-The 54 nodes now snake across the full Path continuously:
-
-1   2   3
-6   5   4
-7   8   9
-12  11  10
-13  14  15
-18  17  16
-...
-
-This pattern continues all the way to Node 54 and does NOT reset when a new
-9-node region begins.
-
-## Locked nodes
-Future nodes remain:
-- visible
-- dimmed
-- locked
-- non-clickable
+## Existing 5.4 fixes retained
+- continuous serpentine route:
+  1 2 3
+  6 5 4
+  7 8 9
+  12 11 10
+- no generic node popup
+- future nodes locked and non-clickable
+- completed/current nodes remain visible
+- current-node auto-scroll remains
 
 ## Upload
-Upload the entire package:
-- index.html
-- css/stage5-4.css
-- js/stage5-4.js
-- js/pathEngine.js
-- js/themes/dinosaurs.js
-- assets/images/themes/dinosaurs/
-- assets/images/collector-room-bg.png
+Upload the whole package.
 
-BUILD 5.4 confirms deployment.
+BUILD 5.5 confirms deployment.
