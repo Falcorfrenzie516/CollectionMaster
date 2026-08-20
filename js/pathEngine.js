@@ -43,8 +43,8 @@ export class PathEngine {
     el.style.setProperty("--p3", region.palette[2]);
     el.style.setProperty("--p4", region.palette[3]);
     if (region.backgroundArt) {
-      el.style.setProperty("--region-art", `url("${region.backgroundArt}")`);
       el.classList.add("has-region-art");
+      el.dataset.backgroundArt = region.backgroundArt;
     }
 
     el.innerHTML = `
@@ -79,6 +79,11 @@ export class PathEngine {
     el.dataset.waterMotion = atmosphere.waterMotion || "none";
     el.dataset.parallax = atmosphere.parallax === false ? "off" : "on";
     if (atmosphere.lightRays) el.classList.add("has-light-rays");
+
+    if (region.backgroundArt) {
+      const art = el.querySelector(".environment-art");
+      if (art) art.style.backgroundImage = `url("${region.backgroundArt}")`;
+    }
 
     this.decorateRegion(el, region, index);
     this.decorateAtmosphere(el, region, index);
@@ -187,16 +192,22 @@ export class PathEngine {
   }
 
   nodePosition(node) {
-    const index = node-1;
-    const region = Math.floor(index/this.theme.nodesPerRegion);
-    const within = index%this.theme.nodesPerRegion;
-    const pattern = [
-      [22,12],[50,18],[78,12],
-      [80,42],[52,49],[23,43],
-      [25,73],[51,80],[78,73]
-    ];
-    const [x, localY] = pattern[within];
-    return {x, y:region*this.regionHeight + localY/100*this.regionHeight, region};
+    const index = node - 1;
+    const row = Math.floor(index / 3);
+    const columnInSequence = index % 3;
+    const visualColumn = row % 2 === 0 ? columnInSequence : 2 - columnInSequence;
+
+    const xPositions = [22, 50, 78];
+    const rowsPerRegion = 3;
+    const region = Math.floor(row / rowsPerRegion);
+    const rowInsideRegion = row % rowsPerRegion;
+    const yPositions = [16, 47, 78];
+
+    return {
+      x: xPositions[visualColumn],
+      y: region * this.regionHeight + (yPositions[rowInsideRegion] / 100 * this.regionHeight),
+      region
+    };
   }
 
   createNode(node, pos) {
@@ -213,7 +224,11 @@ export class PathEngine {
 
     b.onclick = () => {
       if (b.disabled) return;
-      this.onNodeClick?.(node, reward);
+      // Build 5.4: no generic node popup.
+      // This hook is reserved for future claim/reward actions only.
+      if (typeof this.onNodeClick === "function") {
+        this.onNodeClick(node, reward, b);
+      }
     };
     return b;
   }
