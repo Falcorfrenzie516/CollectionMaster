@@ -42,8 +42,14 @@ export class PathEngine {
     el.style.setProperty("--p2", region.palette[1]);
     el.style.setProperty("--p3", region.palette[2]);
     el.style.setProperty("--p4", region.palette[3]);
+    if (region.backgroundArt) {
+      el.style.setProperty("--region-art", `url("${region.backgroundArt}")`);
+      el.classList.add("has-region-art");
+    }
 
     el.innerHTML = `
+      <div class="environment-art"></div>
+      <div class="environment-art-shade"></div>
       <div class="environment-sky"></div>
       <div class="environment-light-rays"></div>
       <div class="environment-back"></div>
@@ -205,7 +211,10 @@ export class PathEngine {
     const reward = this.theme.rewards[node];
     if (reward) b.classList.add(`reward-${reward}`);
 
-    b.onclick = () => this.onNodeClick?.(node, reward);
+    b.onclick = () => {
+      if (b.disabled) return;
+      this.onNodeClick?.(node, reward);
+    };
     return b;
   }
 
@@ -230,8 +239,13 @@ export class PathEngine {
     const current = Math.max(1, Math.min(this.theme.nodeCount, currentNode));
     this.nodesEl.querySelectorAll(".long-node").forEach(el => {
       const n = Number(el.dataset.node);
+      const achieved = n <= current;
       el.classList.toggle("completed", n < current);
       el.classList.toggle("current", n === current);
+      el.classList.toggle("locked", n > current);
+      el.disabled = !achieved;
+      el.setAttribute("aria-disabled", String(!achieved));
+      el.title = achieved ? `Node ${n}` : `Node ${n} — Locked`;
     });
 
     const pos = this.nodePositions.get(current);
