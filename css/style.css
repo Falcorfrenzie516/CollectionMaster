@@ -286,6 +286,105 @@ button.danger {
   padding: 1rem 0;
 }
 
+/* ---------- COLLECTION BOOK ---------- */
+.book-index {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.book-row {
+  display: grid;
+  grid-template-columns: 1.4fr 0.6fr 0.9fr;
+  gap: 0.4rem;
+  align-items: center;
+  padding: 0.7rem 0.8rem;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  color: var(--text);
+  font-size: 0.88rem;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.book-row.unknown {
+  opacity: 0.45;
+}
+
+.book-row.discovered:hover {
+  border-color: var(--accent);
+}
+
+.book-name {
+  font-weight: 700;
+}
+
+.book-progress {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.book-earn {
+  text-align: right;
+  color: var(--success);
+  font-weight: 600;
+  font-size: 0.82rem;
+}
+
+.text-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 0.75rem;
+}
+
+.rarity-slots {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.rarity-slot {
+  display: grid;
+  grid-template-columns: 1fr 0.7fr 0.8fr 0.9fr;
+  gap: 0.35rem;
+  align-items: center;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  background: var(--surface2);
+  font-size: 0.82rem;
+}
+
+.rarity-slot.empty-slot {
+  opacity: 0.4;
+}
+
+.slot-rarity {
+  text-transform: capitalize;
+  font-weight: 600;
+}
+
+.slot-status {
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.slot-rank {
+  color: #cbd5e1;
+}
+
+.slot-earn {
+  text-align: right;
+  color: var(--success);
+  font-weight: 600;
+}
+
 /* ---------- PLACEHOLDERS ---------- */
 .placeholder-box {
   background: var(--surface);
