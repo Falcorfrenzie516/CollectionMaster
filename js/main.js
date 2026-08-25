@@ -27,8 +27,12 @@ if (!player.path) {
     claimedNodes: [0],
     unlockedFlags: {}
   };
-  saveGame(player);
 }
+// Bootstrap lifetime income from existing progress so Path opens immediately
+if (player.path.lifetimeIncome === 0 && (player.incomePerSecond > 0 || player.money > 0)) {
+  player.path.lifetimeIncome = Math.max(player.money, player.incomePerSecond * 60);
+}
+saveGame(player);
 
 /**
  * Give a card the player is missing at a given rarity preference.
