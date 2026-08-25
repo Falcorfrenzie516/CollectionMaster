@@ -144,6 +144,11 @@ function renderHome() {
           <p class="hint">Income is running. Explore the room.</p>
         </div>
       `}
+
+      <div class="reset-area">
+        <button id="btn-reset" class="danger">Reset Progress</button>
+        <p class="hint">Clears all cards, money, and progress</p>
+      </div>
     </div>
   `;
 
@@ -160,6 +165,16 @@ function renderHome() {
         return;
       }
       navigate("collections");
+    });
+  }
+
+  const resetBtn = document.getElementById("btn-reset");
+  if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+      if (confirm("Reset all progress? This cannot be undone.")) {
+        resetGame();
+        navigate("home");
+      }
     });
   }
 }
