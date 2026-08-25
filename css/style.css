@@ -689,3 +689,34 @@ button.danger {
   color: #fbbf24;
   font-weight: 600;
 }
+
+/* ---------- PRESTIGE ---------- */
+.prestige-area {
+  margin-top: 1.25rem;
+  padding: 1rem;
+  background: var(--surface);
+  border: 1px solid #ca8a04;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.section-title {
+  font-size: 1.05rem;
+  margin-bottom: 0.35rem;
+  color: #fbbf24;
+}
+
+.prestige-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  margin: 0.75rem 0 1rem;
+  font-size: 0.85rem;
+  text-align: left;
+}
+
+.prestige-area .primary {
+  width: 100%;
+  max-width: 240px;
+  background: #a16207;
+}
