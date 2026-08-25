@@ -4,6 +4,7 @@ import { initConveyorState } from "./conveyor.js";
 import { initExpeditionsState } from "./expeditions.js";
 import { initTokensState } from "./tokens.js";
 import { initAchievementsState } from "./achievements.js";
+import { initPrestigeState } from "./prestige.js";
 
 export function createPlayerState() {
   return {
@@ -19,7 +20,8 @@ export function createPlayerState() {
     conveyor: initConveyorState(),
     expeditions: initExpeditionsState(),
     tokens: initTokensState(),
-    achievements: initAchievementsState()
+    achievements: initAchievementsState(),
+    prestige: initPrestigeState()
   };
 }
 
