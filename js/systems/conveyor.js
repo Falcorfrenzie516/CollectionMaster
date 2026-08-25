@@ -117,9 +117,17 @@ export function initConveyorState() {
  */
 export function refillConveyor(conveyor, packsOpened) {
   const now = Date.now();
-  // Refill one slot at a time every REFILL_MS if under capacity
+
+  if (conveyor.offers.length === 0) {
+    while (conveyor.offers.length < MAX_OFFERS) {
+      conveyor.offers.push(createOffer(packsOpened));
+    }
+    conveyor.lastRefillAt = now;
+    return true;
+  }
+
   if (conveyor.offers.length >= MAX_OFFERS) return false;
-  if (now - conveyor.lastRefillAt < REFILL_MS && conveyor.offers.length > 0) return false;
+  if (now - conveyor.lastRefillAt < REFILL_MS) return false;
 
   conveyor.offers.push(createOffer(packsOpened));
   conveyor.lastRefillAt = now;
