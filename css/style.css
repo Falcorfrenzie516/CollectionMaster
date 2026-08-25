@@ -152,6 +152,14 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
+  min-height: 70vh;
+  background-image: linear-gradient(180deg, rgba(15,20,25,0.55) 0%, rgba(15,20,25,0.82) 100%), url("../assets/room-bg.png");
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  margin: -1rem;
+  padding: 1rem;
+  border-radius: 0;
 }
 
 .room-hero {
