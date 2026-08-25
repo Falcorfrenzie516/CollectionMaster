@@ -32,11 +32,5 @@ export const RANK_MULTIPLIER = {
 };
 
 export const RARITIES = [
-  "basic",
-  "gold",
-  "emerald",
-  "sapphire",
-  "ruby",
-  "diamond",
-  "rainbow"
+  "basic", "gold", "emerald", "sapphire", "ruby", "diamond", "rainbow"
 ];
