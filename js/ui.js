@@ -4,7 +4,9 @@ import {
   tickIncome,
   getPlayer,
   setPage,
-  resetGame
+  resetGame,
+  claimPathNode,
+  getPathInfo
 } from "./main.js";
 import { getCardEarnings, getCollectionSorted } from "./systems/collection.js";
 
@@ -142,13 +144,17 @@ function renderHome() {
       ` : `
         <div class="start-area">
           <p class="hint">Income is running. Explore the room.</p>
+          <button id="btn-reset" class="danger" style="margin-top:1rem;">Reset Progress</button>
+          <p class="hint">Clears all cards, money, and progress</p>
         </div>
       `}
 
-      <div class="reset-area">
-        <button id="btn-reset" class="danger">Reset Progress</button>
-        <p class="hint">Clears all cards, money, and progress</p>
-      </div>
+      ${!p.started ? `
+        <div class="reset-area">
+          <button id="btn-reset" class="danger">Reset Progress</button>
+          <p class="hint">Clears all cards, money, and progress</p>
+        </div>
+      ` : ""}
     </div>
   `;
 
@@ -247,16 +253,81 @@ function renderConveyor() {
 
 // ----- PATH -----
 function renderPath() {
+  const p = getPlayer();
+  const info = getPathInfo();
+  const next = info.nextClaimable;
+  const unlocked = info.unlockedCount;
+
+  let nodesHtml = "";
+  for (let i = 0; i < 20; i++) {
+    const claimed = info.claimedNodes.includes(i);
+    const isNext = next === i;
+    const isUnlocked = i < unlocked;
+    const reward = info.rewards[i];
+    const target = info.targets[i];
+
+    let statusClass = "locked";
+    if (claimed) statusClass = "claimed";
+    else if (isNext) statusClass = "claimable";
+    else if (isUnlocked) statusClass = "unlocked";
+
+    const icon = claimed ? "●" : isNext ? "◇" : isUnlocked ? "○" : "·";
+
+    nodesHtml += `
+      <div class="path-node ${statusClass}" data-node="${i}">
+        <div class="node-num">${i + 1}</div>
+        <div class="node-icon">${icon}</div>
+        <div class="node-info">
+          <div class="node-label">${reward.label}</div>
+          <div class="node-meta">${target === 0 ? "Start" : "Needs $" + target.toLocaleString() + " lifetime"}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  const canClaim = next !== null;
+  const nextLabel = canClaim
+    ? `Slide to Node ${next + 1}: ${info.rewards[next].label}`
+    : unlocked >= 20
+      ? "Path complete!"
+      : "Earn more income to unlock the next node";
+
   pageContent.innerHTML = `
     <div class="page">
       <h2 class="page-title">Path</h2>
-      <p class="page-sub">20-node progression (placeholder)</p>
-      <div class="placeholder-box">
-        <p>Path table + token movement will live here.</p>
-        <p>Income unlocks nodes. Slide token one at a time.</p>
+      <p class="page-sub">
+        Node ${info.currentNode + 1} / 20 · Lifetime income $${Math.floor(info.lifetimeIncome).toLocaleString()}
+      </p>
+
+      <div class="path-claim-bar">
+        <button id="btn-claim-node" class="primary large" ${canClaim ? "" : "disabled"}>
+          ${canClaim ? "♟️ " + nextLabel : nextLabel}
+        </button>
+      </div>
+
+      <div class="path-list">
+        ${nodesHtml}
       </div>
     </div>
   `;
+
+  const claimBtn = document.getElementById("btn-claim-node");
+  if (claimBtn && canClaim) {
+    claimBtn.addEventListener("click", () => {
+      const result = claimPathNode();
+      if (result.error) {
+        alert(result.error);
+        return;
+      }
+      let msg = `Node ${result.node} claimed!`;
+      if (result.cashGained) msg += ` +$${result.cashGained}`;
+      if (result.card) msg += ` · Got ${result.card.name} (${result.card.rarity})`;
+      if (result.flag) msg += ` · Unlocked: ${result.flag}`;
+      // brief feedback then re-render
+      updateHeader();
+      renderPath();
+    });
+  }
 }
 
 // ----- EXPEDITIONS -----
