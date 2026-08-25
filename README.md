@@ -1,8 +1,13 @@
-# Collection Master — Build v1.2
+# Collection Master — Build v1.2.1
 
 Mobile-first hub + core loop.
 
-## What's new in v1.2
+## What's new in v1.2.1
+
+- Visible **build number** (`v1.2.1`) under the title
+- **Reset Progress** button on Home (clears all cards, money, and progress)
+
+## What's in v1.2
 
 - **Home page** (Collector's Room) with tappable areas
 - **Persistent top tabs** on every page
@@ -13,7 +18,7 @@ Mobile-first hub + core loop.
 
 | Tab / Object      | Status                          |
 |-------------------|---------------------------------|
-| Home              | Working hub                     |
+| Home              | Working hub + Reset             |
 | Path              | Placeholder                     |
 | Conveyor          | Basic buy pack ($100)           |
 | Expeditions       | Placeholder                     |
