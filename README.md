@@ -1,63 +1,61 @@
-# Collection Master — Version 1.1
+# Collection Master — Build v1.2
 
-Core loop prototype.
+Mobile-first hub + core loop.
 
-## What works
+## What's new in v1.2
 
-- Start Collecting → 2 starter packs
-- Open packs (4 cards each)
-- Rarity odds (Basic → Rainbow)
-- Rank system (1–5)
-- Rank 5 duplicates sell for 50% of earnings
-- Live income from owned cards
-- Whole-number money
-- Save / Load (localStorage)
-- Simple dark UI
+- **Home page** (Collector's Room) with tappable areas
+- **Persistent top tabs** on every page
+- **Mobile-first** layout (fits phones + desktop)
+- Same core loop as v1.1 (packs, ranks, income, save)
+
+## Pages
+
+| Tab / Object      | Status                          |
+|-------------------|---------------------------------|
+| Home              | Working hub                     |
+| Path              | Placeholder                     |
+| Conveyor          | Basic buy pack ($100)           |
+| Expeditions       | Placeholder                     |
+| Collections       | Working card list               |
+| Events            | Placeholder                     |
+| Achievements      | Placeholder                     |
+| Tokens            | Placeholder                     |
 
 ## How to run
 
-1. Open `index.html` in a modern browser  
-   (or use any local static server)
-
-2. Click **Start Collecting**
-
-3. Watch income tick every second
-
-4. Buy more packs when you have $100
+1. Unzip
+2. Open `index.html` in a browser (or local static server)
+3. Tap **Start Collecting** on the Home page
 
 ## File structure
 
 ```
-collection-master-v1.1/
+collection-master-v1.2/
 ├── index.html
-├── css/
-│   └── style.css
+├── css/style.css
 ├── js/
-│   ├── main.js              # Game actions + debug helpers
-│   ├── ui.js                # Simple UI wiring
-│   ├── data/
-│   │   └── dinosaurs.js     # 12 dinos + multipliers
+│   ├── main.js
+│   ├── ui.js
+│   ├── data/dinosaurs.js
 │   └── systems/
-│       ├── packs.js         # Pack opening logic
-│       ├── collection.js    # Ownership, rank-up, earnings
-│       └── save.js          # localStorage save/load
+│       ├── packs.js
+│       ├── collection.js
+│       └── save.js
 └── README.md
 ```
 
 ## Console helpers
 
-Open browser console and use:
-
 ```js
-CM.debugState()        // print current state
-CM.debugGiveMoney(500) // give money for testing
-CM.resetGame()         // wipe save
+CM.debugState()
+CM.debugGiveMoney(5000)
+CM.resetGame()
 ```
 
-## Next steps (v1.2+)
+## Next (v1.3 ideas)
 
-- Conveyor pack shop (live offers)
-- Path system (20 nodes, income unlock)
+- Path nodes + token sliding
+- Scaling pack prices / conveyor offers
+- Collection Book pages per dinosaur
 - Prestige
-- Collection Book pages
-- Card visuals / rarity frames

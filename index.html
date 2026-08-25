@@ -2,51 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Collection Master v1.1</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Collection Master v1.2</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <div id="app">
-    <header>
-      <h1>Collection Master</h1>
-      <p class="version">v1.1 — Core Loop Prototype</p>
+    <!-- Sticky header + tabs (same on every page) -->
+    <header class="header">
+      <div class="header-top">
+        <button class="logo" data-page="home">Collection Master</button>
+        <div class="stats-inline">
+          <span id="money">$0</span>
+          <span id="income">$0/s</span>
+        </div>
+      </div>
+
+      <nav class="tabs">
+        <button class="tab" data-page="home">Home</button>
+        <button class="tab" data-page="path">Path</button>
+        <button class="tab" data-page="conveyor">Conveyor</button>
+        <button class="tab" data-page="expeditions">Expeditions</button>
+        <button class="tab" data-page="collections">Collections</button>
+        <button class="tab" data-page="events">Events</button>
+        <button class="tab" data-page="achievements">Achievements</button>
+        <button class="tab" data-page="tokens">Tokens</button>
+      </nav>
     </header>
 
-    <section class="stats">
-      <div class="stat">
-        <span class="label">Money</span>
-        <span id="money">$0</span>
-      </div>
-      <div class="stat">
-        <span class="label">Income</span>
-        <span id="income">$0 /s</span>
-      </div>
-      <div class="stat">
-        <span class="label">Discovered</span>
-        <span id="discovered">0 / 12</span>
-      </div>
-      <div class="stat">
-        <span class="label">Packs Opened</span>
-        <span id="packs">0</span>
-      </div>
-    </section>
-
-    <section class="actions">
-      <button id="btn-start" class="primary">Start Collecting</button>
-      <button id="btn-buy" disabled>Buy Pack ($100)</button>
-      <button id="btn-reset" class="danger">Reset</button>
-    </section>
-
-    <section class="log">
-      <h2>Activity</h2>
-      <div id="log"></div>
-    </section>
-
-    <section class="collection">
-      <h2>Your Cards</h2>
-      <div id="card-list"></div>
-    </section>
+    <!-- Page content swaps here -->
+    <main id="page-content"></main>
   </div>
 
   <script type="module" src="js/ui.js"></script>
