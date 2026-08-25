@@ -104,72 +104,88 @@ function renderPage(page) {
 // ----- HOME -----
 function renderHome() {
   const p = getPlayer();
+  const pathNode = (p.path?.currentNode ?? 0) + 1;
+  const expOpen = !!(p.path?.unlockedFlags?.expeditions);
+  const achCount = Object.keys(p.achievements?.unlocked || {}).length;
+  const tokenCount = Object.keys(p.tokens?.unlocked || {}).length;
+  const offerCount = p.conveyor?.offers?.length || 0;
+  const equipped = p.tokens?.equipped === "explorer" ? "Explorer" : (p.tokens?.equipped || "Explorer");
+
   pageContent.innerHTML = `
     <div class="home-room">
-      <h2 class="page-title">Collector's Room</h2>
-      <p class="page-sub">Tap any area to open it</p>
+      <div class="room-hero">
+        <div class="room-hero-label">Collector's Room</div>
+        <p class="room-hero-sub">${p.started ? "Income running · pick a station" : "Your museum starts here"}</p>
+      </div>
 
-      <div class="room-grid">
-        <button class="room-card" data-goto="path">
-          <div class="room-icon">🗺️</div>
+      <!-- Featured: Path table -->
+      <button class="room-feature" data-goto="path">
+        <div class="feature-icon">🗺️</div>
+        <div class="feature-text">
           <div class="room-label">Path Table</div>
-          <div class="room-desc">Progress & rewards</div>
-        </button>
+          <div class="room-desc">Node ${pathNode}/20 · slide your token</div>
+        </div>
+        <div class="feature-arrow">›</div>
+      </button>
 
+      <div class="room-section-label">Stations</div>
+      <div class="room-grid">
         <button class="room-card" data-goto="collections">
           <div class="room-icon">📘</div>
           <div class="room-label">Dinosaur Book</div>
-          <div class="room-desc">${p.totalDiscovered}/12 discovered</div>
+          <div class="room-desc">${p.totalDiscovered}/12 species</div>
         </button>
 
         <button class="room-card" data-goto="conveyor">
           <div class="room-icon">📦</div>
           <div class="room-label">Conveyor</div>
-          <div class="room-desc">Buy packs</div>
+          <div class="room-desc">${offerCount} pack${offerCount === 1 ? "" : "s"} waiting</div>
         </button>
 
-        <button class="room-card" data-goto="expeditions">
+        <button class="room-card ${expOpen ? "" : "dimmed"}" data-goto="expeditions">
           <div class="room-icon">🏕️</div>
           <div class="room-label">Expeditions</div>
-          <div class="room-desc">Coming soon</div>
+          <div class="room-desc">${expOpen ? "Camp open" : "Locked on Path"}</div>
         </button>
 
-        <button class="room-card" data-goto="events">
+        <button class="room-card dimmed" data-goto="events">
           <div class="room-icon">🎄</div>
           <div class="room-label">Event Books</div>
-          <div class="room-desc">Seasonal collections</div>
+          <div class="room-desc">Graphics later</div>
         </button>
+      </div>
 
+      <div class="room-section-label">Progress</div>
+      <div class="room-grid">
         <button class="room-card" data-goto="achievements">
           <div class="room-icon">🏆</div>
           <div class="room-label">Achievements</div>
-          <div class="room-desc">Permanent progress</div>
+          <div class="room-desc">${achCount} unlocked</div>
         </button>
 
         <button class="room-card" data-goto="tokens">
           <div class="room-icon">♟️</div>
           <div class="room-label">Tokens</div>
-          <div class="room-desc">Path pieces</div>
+          <div class="room-desc">${tokenCount} owned</div>
         </button>
       </div>
 
       ${!p.started ? `
         <div class="start-area">
           <button id="btn-start" class="primary large">Start Collecting</button>
-          <p class="hint">Opens 2 starter packs + first token</p>
+          <p class="hint">Opens 2 starter packs + Explorer token</p>
         </div>
       ` : `
         <div class="start-area">
-          <p class="hint">Income is running. Explore the room.</p>
-          <button id="btn-reset" class="danger" style="margin-top:1rem;">Reset Progress</button>
-          <p class="hint">Clears all cards, money, and progress</p>
+          <p class="hint">Idle income is active.</p>
         </div>
       `}
 
       <div class="prestige-area" id="prestige-panel"></div>
+
       <div class="reset-area">
         <button id="btn-reset" class="danger">Reset Progress</button>
-        <p class="hint">Full wipe including achievements (dev)</p>
+        <p class="hint">Full wipe (dev) — includes achievements</p>
       </div>
     </div>
   `;
@@ -201,7 +217,6 @@ function renderHome() {
     });
   }
 
-  // Prestige panel
   const panel = document.getElementById("prestige-panel");
   if (panel) {
     const info = getPrestigeInfo();
@@ -211,7 +226,7 @@ function renderHome() {
     } else {
       panel.innerHTML = `
         <h3 class="section-title">Prestige</h3>
-        <p class="hint">Resets collection, money, path & conveyor. Keeps achievements, tokens & Prestige Points.</p>
+        <p class="hint">Resets collection, path & shops. Keeps achievements, tokens & PP.</p>
         <div class="prestige-stats">
           <div>Prestiges: <strong>${info.prestigeCount}</strong></div>
           <div>Current PP: <strong>${info.currentPP}</strong></div>
@@ -223,7 +238,7 @@ function renderHome() {
       const pb = document.getElementById("btn-prestige");
       if (pb) {
         pb.addEventListener("click", () => {
-          if (!confirm("Prestige? This resets the main collection. Achievements, tokens, and Prestige Points are kept.")) return;
+          if (!confirm("Prestige? Main collection resets. Achievements, tokens, and Prestige Points are kept.")) return;
           const r = tryPrestige();
           if (r.error) { alert(r.error); return; }
           alert(`Prestiged! +${r.fromMoney} PP from money. Total PP: ${r.prestigePoints}. Prestige #${r.prestigeCount}`);
