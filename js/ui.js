@@ -17,7 +17,9 @@ import {
   getExpeditionsInfo,
   tryEquipToken,
   getTokensInfo,
-  getAchievementsInfo
+  getAchievementsInfo,
+  getPrestigeInfo,
+  tryPrestige
 } from "./main.js";
 import { getCardEarnings, getCollectionSorted, getCardKey } from "./systems/collection.js";
 import { DINOSAURS, RARITIES } from "./data/dinosaurs.js";
@@ -164,12 +166,11 @@ function renderHome() {
         </div>
       `}
 
-      ${!p.started ? `
-        <div class="reset-area">
-          <button id="btn-reset" class="danger">Reset Progress</button>
-          <p class="hint">Clears all cards, money, and progress</p>
-        </div>
-      ` : ""}
+      <div class="prestige-area" id="prestige-panel"></div>
+      <div class="reset-area">
+        <button id="btn-reset" class="danger">Reset Progress</button>
+        <p class="hint">Full wipe including achievements (dev)</p>
+      </div>
     </div>
   `;
 
@@ -194,9 +195,43 @@ function renderHome() {
     resetBtn.addEventListener("click", () => {
       if (confirm("Reset all progress? This cannot be undone.")) {
         resetGame();
+        openDinoId = null;
         navigate("home");
       }
     });
+  }
+
+  // Prestige panel
+  const panel = document.getElementById("prestige-panel");
+  if (panel) {
+    const info = getPrestigeInfo();
+    const p2 = getPlayer();
+    if (!p2.started) {
+      panel.innerHTML = `<p class="hint">Prestige unlocks after you start collecting.</p>`;
+    } else {
+      panel.innerHTML = `
+        <h3 class="section-title">Prestige</h3>
+        <p class="hint">Resets collection, money, path & conveyor. Keeps achievements, tokens & Prestige Points.</p>
+        <div class="prestige-stats">
+          <div>Prestiges: <strong>${info.prestigeCount}</strong></div>
+          <div>Current PP: <strong>${info.currentPP}</strong></div>
+          <div>From money: <strong>+${info.fromMoney} PP</strong></div>
+          <div>Rate: <strong>$${info.rate.toLocaleString()}</strong> / PP</div>
+        </div>
+        <button id="btn-prestige" class="primary">Prestige Now</button>
+      `;
+      const pb = document.getElementById("btn-prestige");
+      if (pb) {
+        pb.addEventListener("click", () => {
+          if (!confirm("Prestige? This resets the main collection. Achievements, tokens, and Prestige Points are kept.")) return;
+          const r = tryPrestige();
+          if (r.error) { alert(r.error); return; }
+          alert(`Prestiged! +${r.fromMoney} PP from money. Total PP: ${r.prestigePoints}. Prestige #${r.prestigeCount}`);
+          openDinoId = null;
+          navigate("home");
+        });
+      }
+    }
   }
 }
 

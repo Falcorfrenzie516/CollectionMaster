@@ -44,6 +44,11 @@ import {
   getAchievementProgress,
   ACHIEVEMENTS
 } from "./systems/achievements.js";
+import {
+  initPrestigeState,
+  getPrestigePreview,
+  doPrestige
+} from "./systems/prestige.js";
 
 let player = loadGame() || createPlayerState();
 
@@ -67,6 +72,9 @@ if (!player.tokens) {
 }
 if (!player.achievements) {
   player.achievements = initAchievementsState();
+}
+if (!player.prestige) {
+  player.prestige = initPrestigeState();
 }
 syncTokens(player);
 syncAchievements(player);
@@ -299,6 +307,23 @@ export function getAchievementsInfo() {
   return getAchievementProgress(player);
 }
 
+
+export function getPrestigeInfo() {
+  return getPrestigePreview(player);
+}
+
+export function tryPrestige() {
+  if (!player.started) {
+    return { error: "Start collecting before prestiging" };
+  }
+  const result = doPrestige(player, {
+    initConveyor: initConveyorState,
+    initExpeditions: initExpeditionsState
+  });
+  saveGame(player);
+  return result;
+}
+
 export function getPlayer() {
   return player;
 }
@@ -361,6 +386,8 @@ if (typeof window !== "undefined") {
     tryEquipToken,
     getTokensInfo,
     getAchievementsInfo,
+    getPrestigeInfo,
+    tryPrestige,
     getPlayer,
     setPage,
     resetGame,
