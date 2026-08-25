@@ -1,6 +1,9 @@
 import {
   startCollecting,
   buyPack,
+  buyConveyorOffer,
+  tickConveyor,
+  getConveyor,
   tickIncome,
   getPlayer,
   setPage,
@@ -219,36 +222,49 @@ function renderCollections() {
 // ----- CONVEYOR -----
 function renderConveyor() {
   const p = getPlayer();
+  tickConveyor(); // try refill on view
+  const belt = getConveyor();
+
+  let offersHtml = "";
+  if (!belt.offers.length) {
+    offersHtml = `<p class="empty">Belt is empty — new packs arrive every few seconds.</p>`;
+  } else {
+    offersHtml = belt.offers.map(o => {
+      const canBuy = p.started && p.money >= o.price;
+      return `
+        <div class="conveyor-offer" data-uid="${o.uid}">
+          <div class="offer-name">${o.name}</div>
+          <div class="offer-info">${o.desc}</div>
+          <button class="primary btn-buy-offer" data-uid="${o.uid}" ${canBuy ? "" : "disabled"}>
+            Buy for ${formatMoney(o.price)}
+          </button>
+        </div>
+      `;
+    }).join("");
+  }
+
   pageContent.innerHTML = `
     <div class="page">
       <h2 class="page-title">Conveyor Belt</h2>
-      <p class="page-sub">Pack shop (basic version)</p>
-
-      <div class="conveyor-offer">
-        <div class="offer-name">Standard Pack</div>
-        <div class="offer-info">4 cards · Normal odds</div>
-        <button id="btn-buy" class="primary" ${!p.started || p.money < 100 ? "disabled" : ""}>
-          Buy for $100
-        </button>
+      <p class="page-sub">Packs refill automatically · prices scale with packs opened</p>
+      <div class="conveyor-belt">
+        ${offersHtml}
       </div>
-
-      <p class="hint">Themed packs & scaling prices coming in a later build.</p>
+      <p class="hint">Standard, themed, gold & premium packs appear over time.</p>
     </div>
   `;
 
-  const buyBtn = document.getElementById("btn-buy");
-  if (buyBtn) {
-    buyBtn.addEventListener("click", () => {
-      const result = buyPack(100);
+  pageContent.querySelectorAll(".btn-buy-offer").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const result = buyConveyorOffer(btn.dataset.uid);
       if (result.error) {
         alert(result.error);
         return;
       }
       updateHeader();
-      // Stay on conveyor, just refresh button state
       renderConveyor();
     });
-  }
+  });
 }
 
 // ----- PATH -----
@@ -395,6 +411,7 @@ setInterval(() => {
     tickIncome();
     updateHeader();
   }
+  tickConveyor();
 }, 1000);
 
 // -----------------------------

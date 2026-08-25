@@ -16,10 +16,15 @@ import {
   NODE_TARGETS,
   NODE_REWARDS
 } from "./systems/path.js";
+import {
+  initConveyorState,
+  refillConveyor,
+  removeOffer
+} from "./systems/conveyor.js";
 
 let player = loadGame() || createPlayerState();
 
-// Migrate old saves that lack path
+// Migrate old saves
 if (!player.path) {
   player.path = {
     currentNode: 0,
@@ -28,7 +33,9 @@ if (!player.path) {
     unlockedFlags: {}
   };
 }
-// Bootstrap lifetime income from existing progress so Path opens immediately
+if (!player.conveyor) {
+  player.conveyor = initConveyorState();
+}
 if (player.path.lifetimeIncome === 0 && (player.incomePerSecond > 0 || player.money > 0)) {
   player.path.lifetimeIncome = Math.max(player.money, player.incomePerSecond * 60);
 }
@@ -75,8 +82,8 @@ function giveMissingCard(state, preferredRarity = "basic") {
 export function startCollecting() {
   if (player.started) return { error: "Already started" };
 
-  const pack1 = openPack(true);
-  const pack2 = openPack(true);
+  const pack1 = openPack({ isStarter: true });
+  const pack2 = openPack({ isStarter: true });
   const results1 = addCardsToCollection(player, pack1);
   const results2 = addCardsToCollection(player, pack2);
 
@@ -96,11 +103,46 @@ export function buyPack(cost = 100) {
     return { error: "Not enough money", needed: cost, have: player.money };
   }
   player.money -= cost;
-  const cards = openPack(false);
+  const cards = openPack({});
   const results = addCardsToCollection(player, cards);
   player.packsOpened++;
   saveGame(player);
   return { cards, results, player };
+}
+
+/**
+ * Buy a specific conveyor offer by uid
+ */
+export function buyConveyorOffer(uid) {
+  if (!player.conveyor) player.conveyor = initConveyorState();
+  const offer = player.conveyor.offers.find(o => o.uid === uid);
+  if (!offer) return { error: "Offer not found" };
+  if (player.money < offer.price) {
+    return { error: "Not enough money", needed: offer.price, have: player.money };
+  }
+
+  player.money -= offer.price;
+  const cards = openPack({
+    filter: offer.filter,
+    oddsBoost: offer.oddsBoost
+  });
+  const results = addCardsToCollection(player, cards);
+  player.packsOpened++;
+  removeOffer(player.conveyor, uid);
+  saveGame(player);
+  return { cards, results, offer, player };
+}
+
+export function tickConveyor() {
+  if (!player.conveyor) player.conveyor = initConveyorState();
+  const changed = refillConveyor(player.conveyor, player.packsOpened);
+  if (changed) saveGame(player);
+  return player.conveyor;
+}
+
+export function getConveyor() {
+  if (!player.conveyor) player.conveyor = initConveyorState();
+  return player.conveyor;
 }
 
 export function tickIncome() {
@@ -158,12 +200,12 @@ export function debugGiveMoney(amount = 1000) {
 }
 
 export function debugState() {
-  console.log("=== Collection Master v1.3 ===");
+  console.log("=== Collection Master v1.4 ===");
   console.log("Money:", player.money);
   console.log("Income/s:", player.incomePerSecond);
   console.log("Discovered:", player.totalDiscovered, "/ 12");
   console.log("Path node:", player.path?.currentNode + 1);
-  console.log("Lifetime income:", player.path?.lifetimeIncome);
+  console.log("Conveyor offers:", player.conveyor?.offers?.length);
   return player;
 }
 
@@ -171,6 +213,9 @@ if (typeof window !== "undefined") {
   window.CM = {
     startCollecting,
     buyPack,
+    buyConveyorOffer,
+    tickConveyor,
+    getConveyor,
     tickIncome,
     claimPathNode,
     getPathInfo,
