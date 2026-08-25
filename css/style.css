@@ -240,11 +240,13 @@ button.danger {
   background: var(--danger);
   color: #fecaca;
   border: none;
-  border-radius: 8px;
-  padding: 0.55rem 0.9rem;
-  font-size: 0.85rem;
+  border-radius: 10px;
+  padding: 0.7rem 1.25rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
+  width: 100%;
+  max-width: 240px;
 }
 
 /* ---------- COLLECTION LIST ---------- */
@@ -296,6 +298,66 @@ button.danger {
 
 .placeholder-box p + p {
   margin-top: 0.5rem;
+}
+
+/* ---------- PATH ---------- */
+.path-claim-bar {
+  margin-bottom: 1rem;
+}
+
+.path-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.path-node {
+  display: grid;
+  grid-template-columns: 2rem 1.5rem 1fr;
+  gap: 0.5rem;
+  align-items: center;
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 0.85rem;
+}
+
+.path-node.claimed {
+  opacity: 0.55;
+  border-left: 3px solid #64748b;
+}
+
+.path-node.claimable {
+  border-left: 3px solid var(--accent);
+  background: #1e3a5f;
+}
+
+.path-node.unlocked {
+  border-left: 3px solid #475569;
+}
+
+.path-node.locked {
+  opacity: 0.35;
+}
+
+.node-num {
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.node-icon {
+  text-align: center;
+  font-size: 0.9rem;
+}
+
+.node-label {
+  font-weight: 600;
+}
+
+.node-meta {
+  font-size: 0.72rem;
+  color: var(--muted);
 }
 
 /* ---------- CONVEYOR ---------- */
