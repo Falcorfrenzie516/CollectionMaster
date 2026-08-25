@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Collection Master v1.1</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <h1>Collection Master</h1>
+      <p class="version">v1.1 — Core Loop Prototype</p>
+    </header>
+
+    <section class="stats">
+      <div class="stat">
+        <span class="label">Money</span>
+        <span id="money">$0</span>
+      </div>
+      <div class="stat">
+        <span class="label">Income</span>
+        <span id="income">$0 /s</span>
+      </div>
+      <div class="stat">
+        <span class="label">Discovered</span>
+        <span id="discovered">0 / 12</span>
+      </div>
+      <div class="stat">
+        <span class="label">Packs Opened</span>
+        <span id="packs">0</span>
+      </div>
+    </section>
+
+    <section class="actions">
+      <button id="btn-start" class="primary">Start Collecting</button>
+      <button id="btn-buy" disabled>Buy Pack ($100)</button>
+      <button id="btn-reset" class="danger">Reset</button>
+    </section>
+
+    <section class="log">
+      <h2>Activity</h2>
+      <div id="log"></div>
+    </section>
+
+    <section class="collection">
+      <h2>Your Cards</h2>
+      <div id="card-list"></div>
+    </section>
+  </div>
+
+  <script type="module" src="js/ui.js"></script>
+</body>
+</html>
