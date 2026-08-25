@@ -11,7 +11,11 @@ import {
   claimPathNode,
   getPathInfo
 } from "./main.js";
-import { getCardEarnings, getCollectionSorted } from "./systems/collection.js";
+import { getCardEarnings, getCollectionSorted, getCardKey } from "./systems/collection.js";
+import { DINOSAURS, RARITIES } from "./data/dinosaurs.js";
+
+// Which dino page is open in the Collection Book (null = index)
+let openDinoId = null;
 
 // -----------------------------
 // DOM refs
@@ -191,32 +195,97 @@ function renderHome() {
 // ----- COLLECTIONS -----
 function renderCollections() {
   const p = getPlayer();
-  const cards = getCollectionSorted(p);
 
-  let listHtml = "";
-  if (cards.length === 0) {
-    listHtml = `<p class="empty">No cards yet. Start Collecting from Home.</p>`;
-  } else {
-    listHtml = cards.map(c => {
-      const earnings = getCardEarnings(c);
+  // Detail page for one dinosaur
+  if (openDinoId) {
+    const dino = DINOSAURS.find(d => d.id === openDinoId);
+    if (!dino) {
+      openDinoId = null;
+      renderCollections();
+      return;
+    }
+
+    const slots = RARITIES.map(rarity => {
+      const key = getCardKey(dino.id, rarity);
+      const card = p.cards[key];
+      if (!card) {
+        return `
+          <div class="rarity-slot empty-slot">
+            <span class="slot-rarity">${rarity}</span>
+            <span class="slot-status">?</span>
+            <span class="slot-rank">—</span>
+            <span class="slot-earn">—</span>
+          </div>
+        `;
+      }
+      const earn = getCardEarnings(card);
       return `
-        <div class="card-row rarity-${c.rarity}">
-          <span class="name">${c.name}</span>
-          <span class="rarity">${c.rarity}</span>
-          <span class="rank">Rank ${c.rank}</span>
-          <span class="earnings">${formatMoney(earnings)}/s</span>
+        <div class="rarity-slot rarity-${rarity}">
+          <span class="slot-rarity">${rarity}</span>
+          <span class="slot-status">Owned</span>
+          <span class="slot-rank">Rank ${card.rank}/5</span>
+          <span class="slot-earn">${formatMoney(earn)}/s</span>
         </div>
       `;
     }).join("");
+
+    const ownedCount = RARITIES.filter(r => p.cards[getCardKey(dino.id, r)]).length;
+
+    pageContent.innerHTML = `
+      <div class="page">
+        <button id="btn-book-back" class="text-btn">← Back to Book</button>
+        <h2 class="page-title">${dino.name}</h2>
+        <p class="page-sub">${dino.diet} · ${dino.environment.replace(/_/g, " ")} · ${ownedCount}/7 rarities</p>
+        <div class="rarity-slots">
+          ${slots}
+        </div>
+      </div>
+    `;
+
+    document.getElementById("btn-book-back").addEventListener("click", () => {
+      openDinoId = null;
+      renderCollections();
+    });
+    return;
   }
+
+  // Index — all dinos, lowest base earnings first
+  const sorted = [...DINOSAURS].sort((a, b) => a.baseEarnings - b.baseEarnings);
+
+  const rows = sorted.map(dino => {
+    const discovered = !!p.discovered[dino.id];
+    const ownedRarities = RARITIES.filter(r => p.cards[getCardKey(dino.id, r)]).length;
+    let totalEarn = 0;
+    for (const r of RARITIES) {
+      const c = p.cards[getCardKey(dino.id, r)];
+      if (c) totalEarn += getCardEarnings(c);
+    }
+
+    return `
+      <button class="book-row ${discovered ? "discovered" : "unknown"}" data-dino="${dino.id}">
+        <span class="book-name">${discovered ? dino.name : "???"}</span>
+        <span class="book-progress">${discovered ? ownedRarities + "/7" : "—"}</span>
+        <span class="book-earn">${discovered ? formatMoney(totalEarn) + "/s" : "—"}</span>
+      </button>
+    `;
+  }).join("");
 
   pageContent.innerHTML = `
     <div class="page">
       <h2 class="page-title">Dinosaur Book</h2>
-      <p class="page-sub">${p.totalDiscovered}/12 species discovered</p>
-      <div class="card-list">${listHtml}</div>
+      <p class="page-sub">${p.totalDiscovered}/12 species · tap a page</p>
+      <div class="book-index">
+        ${rows}
+      </div>
     </div>
   `;
+
+  pageContent.querySelectorAll("[data-dino]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      openDinoId = btn.dataset.dino;
+      renderCollections();
+    });
+  });
 }
 
 // ----- CONVEYOR -----
