@@ -1,8 +1,5 @@
-const SAVE_KEY = "collection_master_v1_1";
+const SAVE_KEY = "collection_master_v1_2";
 
-/**
- * Save player state to localStorage
- */
 export function saveGame(state) {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(state));
@@ -13,10 +10,6 @@ export function saveGame(state) {
   }
 }
 
-/**
- * Load player state from localStorage
- * Returns null if no save exists
- */
 export function loadGame() {
   try {
     const raw = localStorage.getItem(SAVE_KEY);
@@ -28,9 +21,6 @@ export function loadGame() {
   }
 }
 
-/**
- * Clear save data
- */
 export function clearSave() {
   localStorage.removeItem(SAVE_KEY);
 }
