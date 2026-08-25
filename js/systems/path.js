@@ -7,25 +7,25 @@
 // Tuned so early nodes are quick, later ones stretch toward multi-hour play
 export const NODE_TARGETS = [
   0,          // 1  Start
-  50,         // 2  Cash drop
-  200,        // 3  Guaranteed missing basic
-  500,        // 4  Cash
-  1200,       // 5  Cash
-  2500,       // 6  Guaranteed missing basic/gold
-  5000,       // 7  Expeditions unlock (placeholder flag)
-  10000,      // 8  Larger cash
-  20000,      // 9  Cash
-  40000,      // 10 Guaranteed missing
-  75000,      // 11 Cash
-  120000,     // 12 Cash
-  200000,     // 13 Guaranteed missing
-  350000,     // 14 Cash
-  550000,     // 15 Cash
-  850000,     // 16 Guaranteed missing
-  1300000,    // 17 Cash
-  2000000,    // 18 Cash
-  3000000,    // 19 Large cash
-  5000000     // 20 Finale
+  25,         // 2  Cash drop
+  100,        // 3  Guaranteed missing basic
+  300,        // 4  Cash
+  700,        // 5  Cash
+  1500,       // 6  Guaranteed missing basic/gold
+  3500,       // 7  Expeditions unlock
+  7000,       // 8  Larger cash
+  15000,      // 9  Cash
+  30000,      // 10 Guaranteed missing
+  60000,      // 11 Cash
+  100000,     // 12 Cash
+  175000,     // 13 Guaranteed missing
+  300000,     // 14 Cash
+  500000,     // 15 Cash
+  800000,     // 16 Guaranteed missing
+  1200000,    // 17 Cash
+  1800000,    // 18 Cash
+  2800000,    // 19 Large cash
+  4500000     // 20 Finale
 ];
 
 export const NODE_REWARDS = [
