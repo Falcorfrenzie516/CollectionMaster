@@ -1,5 +1,7 @@
 import { DINOSAURS, RARITY_MULTIPLIER, RANK_MULTIPLIER } from "../data/dinosaurs.js";
 
+import { initPathState } from "./path.js";
+
 export function createPlayerState() {
   return {
     money: 0,
@@ -9,7 +11,8 @@ export function createPlayerState() {
     totalDiscovered: 0,
     packsOpened: 0,
     started: false,
-    currentPage: "home"
+    currentPage: "home",
+    path: initPathState()
   };
 }
 
