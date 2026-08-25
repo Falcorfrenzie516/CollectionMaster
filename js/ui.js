@@ -9,7 +9,12 @@ import {
   setPage,
   resetGame,
   claimPathNode,
-  getPathInfo
+  getPathInfo,
+  tryUnlockExpedition,
+  tryStartExpedition,
+  claimExpedition,
+  tickAllExpeditions,
+  getExpeditionsInfo
 } from "./main.js";
 import { getCardEarnings, getCollectionSorted, getCardKey } from "./systems/collection.js";
 import { DINOSAURS, RARITIES } from "./data/dinosaurs.js";
@@ -416,17 +421,88 @@ function renderPath() {
 }
 
 // ----- EXPEDITIONS -----
+function formatTime(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return m + ":" + String(s).padStart(2, "0");
+}
+
 function renderExpeditions() {
+  tickAllExpeditions();
+  const p = getPlayer();
+  const info = getExpeditionsInfo();
+
+  if (!info.unlockedSystem) {
+    pageContent.innerHTML = `
+      <div class="page">
+        <h2 class="page-title">Expeditions</h2>
+        <p class="page-sub">Timer-based hunts</p>
+        <div class="placeholder-box">
+          <p>Expedition Camp is locked.</p>
+          <p>Claim the <strong>Expeditions Unlock</strong> node on the Path to open this area.</p>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  const cards = info.defs.map(def => {
+    const status = info.statuses[def.id];
+    const remaining = info.remaining[def.id];
+    let action = "";
+
+    if (status === "locked") {
+      const cost = def.unlockCost === 0 ? "Free" : ("$" + def.unlockCost.toLocaleString());
+      action = `<button class="primary btn-exp-unlock" data-id="${def.id}">Unlock · ${cost}</button>`;
+    } else if (status === "idle") {
+      action = `<button class="primary btn-exp-start" data-id="${def.id}">Start · ${formatTime(def.durationSec)}</button>`;
+    } else if (status === "running") {
+      action = `<button class="primary" disabled>Running · ${formatTime(remaining)}</button>`;
+    } else if (status === "ready") {
+      action = `<button class="primary btn-exp-claim" data-id="${def.id}">Claim Pack</button>`;
+    }
+
+    return `
+      <div class="exp-card status-${status}">
+        <div class="exp-name">${def.name}</div>
+        <div class="exp-desc">${def.desc}</div>
+        <div class="exp-meta">${formatTime(def.durationSec)} · free to run</div>
+        ${action}
+      </div>
+    `;
+  }).join("");
+
   pageContent.innerHTML = `
     <div class="page">
-      <h2 class="page-title">Expeditions</h2>
-      <p class="page-sub">Timer-based hunts</p>
-      <div class="placeholder-box">
-        <p>Expedition camp unlocks later on the Path.</p>
-        <p>Free to start once unlocked. Scaling timers.</p>
-      </div>
+      <h2 class="page-title">Expedition Camp</h2>
+      <p class="page-sub">Free to start · no cooldowns · claim when ready</p>
+      <div class="exp-list">${cards}</div>
     </div>
   `;
+
+  pageContent.querySelectorAll(".btn-exp-unlock").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const r = tryUnlockExpedition(btn.dataset.id);
+      if (r.error) { alert(r.error); return; }
+      updateHeader();
+      renderExpeditions();
+    });
+  });
+  pageContent.querySelectorAll(".btn-exp-start").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const r = tryStartExpedition(btn.dataset.id);
+      if (r.error) { alert(r.error); return; }
+      renderExpeditions();
+    });
+  });
+  pageContent.querySelectorAll(".btn-exp-claim").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const r = claimExpedition(btn.dataset.id);
+      if (r.error) { alert(r.error); return; }
+      updateHeader();
+      renderExpeditions();
+    });
+  });
 }
 
 // ----- EVENTS -----
@@ -483,9 +559,13 @@ setInterval(() => {
   const before = getConveyor().offers.length;
   tickConveyor();
   const after = getConveyor().offers.length;
-  // Live-update Conveyor page when new offers appear
   if (p.currentPage === "conveyor" && after !== before) {
     renderConveyor();
+  }
+  const expChanged = tickAllExpeditions();
+  if (p.currentPage === "expeditions") {
+    // Refresh timers / claim buttons every second while on page
+    renderExpeditions();
   }
 }, 1000);
 

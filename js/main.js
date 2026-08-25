@@ -21,6 +21,16 @@ import {
   refillConveyor,
   removeOffer
 } from "./systems/conveyor.js";
+import {
+  initExpeditionsState,
+  unlockExpedition,
+  startExpedition,
+  tickExpeditions,
+  getExpeditionStatus,
+  getTimeRemaining,
+  isExpeditionsUnlocked,
+  EXPEDITION_DEFS
+} from "./systems/expeditions.js";
 
 let player = loadGame() || createPlayerState();
 
@@ -35,6 +45,9 @@ if (!player.path) {
 }
 if (!player.conveyor) {
   player.conveyor = initConveyorState();
+}
+if (!player.expeditions) {
+  player.expeditions = initExpeditionsState();
 }
 if (player.path.lifetimeIncome === 0 && (player.incomePerSecond > 0 || player.money > 0)) {
   player.path.lifetimeIncome = Math.max(player.money, player.incomePerSecond * 60);
@@ -177,6 +190,56 @@ export function getPathInfo() {
   };
 }
 
+export function tryUnlockExpedition(expId) {
+  const result = unlockExpedition(player, expId);
+  if (!result.error) saveGame(player);
+  return result;
+}
+
+export function tryStartExpedition(expId) {
+  const result = startExpedition(player, expId);
+  if (!result.error) saveGame(player);
+  return result;
+}
+
+export function claimExpedition(expId) {
+  if (!player.expeditions?.completed?.[expId]) {
+    return { error: "Nothing to claim" };
+  }
+  const def = EXPEDITION_DEFS.find(e => e.id === expId);
+  if (!def) return { error: "Unknown expedition" };
+
+  delete player.expeditions.completed[expId];
+  const cards = openPack({
+    filter: def.reward.filter,
+    oddsBoost: def.reward.oddsBoost
+  });
+  const results = addCardsToCollection(player, cards);
+  player.packsOpened++;
+  saveGame(player);
+  return { cards, results, player };
+}
+
+export function tickAllExpeditions() {
+  if (!player.expeditions) player.expeditions = initExpeditionsState();
+  const changed = tickExpeditions(player);
+  if (changed) saveGame(player);
+  return changed;
+}
+
+export function getExpeditionsInfo() {
+  return {
+    unlockedSystem: isExpeditionsUnlocked(player),
+    defs: EXPEDITION_DEFS,
+    statuses: Object.fromEntries(
+      EXPEDITION_DEFS.map(d => [d.id, getExpeditionStatus(player, d.id)])
+    ),
+    remaining: Object.fromEntries(
+      EXPEDITION_DEFS.map(d => [d.id, getTimeRemaining(player, d.id)])
+    )
+  };
+}
+
 export function getPlayer() {
   return player;
 }
@@ -200,12 +263,12 @@ export function debugGiveMoney(amount = 1000) {
 }
 
 export function debugState() {
-  console.log("=== Collection Master v1.4 ===");
+  console.log("=== Collection Master v1.6 ===");
   console.log("Money:", player.money);
   console.log("Income/s:", player.incomePerSecond);
   console.log("Discovered:", player.totalDiscovered, "/ 12");
   console.log("Path node:", player.path?.currentNode + 1);
-  console.log("Conveyor offers:", player.conveyor?.offers?.length);
+  console.log("Expeditions unlocked:", isExpeditionsUnlocked(player));
   return player;
 }
 
@@ -219,6 +282,11 @@ if (typeof window !== "undefined") {
     tickIncome,
     claimPathNode,
     getPathInfo,
+    tryUnlockExpedition,
+    tryStartExpedition,
+    claimExpedition,
+    tickAllExpeditions,
+    getExpeditionsInfo,
     getPlayer,
     setPage,
     resetGame,
