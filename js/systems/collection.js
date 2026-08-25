@@ -2,6 +2,7 @@ import { DINOSAURS, RARITY_MULTIPLIER, RANK_MULTIPLIER } from "../data/dinosaurs
 import { initPathState } from "./path.js";
 import { initConveyorState } from "./conveyor.js";
 import { initExpeditionsState } from "./expeditions.js";
+import { initTokensState } from "./tokens.js";
 
 export function createPlayerState() {
   return {
@@ -15,7 +16,8 @@ export function createPlayerState() {
     currentPage: "home",
     path: initPathState(),
     conveyor: initConveyorState(),
-    expeditions: initExpeditionsState()
+    expeditions: initExpeditionsState(),
+    tokens: initTokensState()
   };
 }
 
