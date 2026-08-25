@@ -649,3 +649,43 @@ button.danger {
 .color-chip.rarity-ruby { background: #9f1239; color: #fecdd3; }
 .color-chip.rarity-diamond { background: #0e7490; color: #cffafe; }
 .color-chip.rarity-rainbow { background: linear-gradient(90deg, #c084fc, #f472b6); color: white; }
+
+/* ---------- ACHIEVEMENTS ---------- */
+.ach-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ach-card {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+}
+
+.ach-card.unlocked {
+  border-color: #ca8a04;
+}
+
+.ach-card.locked {
+  opacity: 0.5;
+}
+
+.ach-name {
+  font-weight: 700;
+  font-size: 0.92rem;
+  margin-bottom: 0.15rem;
+}
+
+.ach-desc {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
+}
+
+.ach-points {
+  font-size: 0.75rem;
+  color: #fbbf24;
+  font-weight: 600;
+}
