@@ -38,6 +38,12 @@ import {
   getEquippedToken,
   getAllTokenDefs
 } from "./systems/tokens.js";
+import {
+  initAchievementsState,
+  syncAchievements,
+  getAchievementProgress,
+  ACHIEVEMENTS
+} from "./systems/achievements.js";
 
 let player = loadGame() || createPlayerState();
 
@@ -59,7 +65,11 @@ if (!player.expeditions) {
 if (!player.tokens) {
   player.tokens = initTokensState();
 }
+if (!player.achievements) {
+  player.achievements = initAchievementsState();
+}
 syncTokens(player);
+syncAchievements(player);
 // One-time migration for very old saves that never tracked lifetime income
 if (
   player.path.lifetimeIncome === 0 &&
@@ -182,6 +192,7 @@ export function getConveyor() {
 
 export function tickIncome() {
   syncTokens(player);
+  syncAchievements(player);
   const gained = player.incomePerSecond;
   player.money += gained;
   player.money = Math.floor(player.money);
@@ -282,6 +293,12 @@ export function getTokensInfo() {
   };
 }
 
+
+export function getAchievementsInfo() {
+  syncAchievements(player);
+  return getAchievementProgress(player);
+}
+
 export function getPlayer() {
   return player;
 }
@@ -304,6 +321,7 @@ export function resetGame() {
   player.conveyor = initConveyorState();
   player.expeditions = initExpeditionsState();
   player.tokens = initTokensState();
+  player.achievements = initAchievementsState();
   saveGame(player);
   return player;
 }
@@ -342,6 +360,7 @@ if (typeof window !== "undefined") {
     getExpeditionsInfo,
     tryEquipToken,
     getTokensInfo,
+    getAchievementsInfo,
     getPlayer,
     setPage,
     resetGame,

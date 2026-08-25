@@ -16,7 +16,8 @@ import {
   tickAllExpeditions,
   getExpeditionsInfo,
   tryEquipToken,
-  getTokensInfo
+  getTokensInfo,
+  getAchievementsInfo
 } from "./main.js";
 import { getCardEarnings, getCollectionSorted, getCardKey } from "./systems/collection.js";
 import { DINOSAURS, RARITIES } from "./data/dinosaurs.js";
@@ -524,13 +525,32 @@ function renderEvents() {
 
 // ----- ACHIEVEMENTS -----
 function renderAchievements() {
+  const info = getAchievementsInfo();
+  const rows = info.list.map(a => {
+    if (a.unlocked) {
+      return `
+        <div class="ach-card unlocked">
+          <div class="ach-name">${a.name}</div>
+          <div class="ach-desc">${a.desc}</div>
+          <div class="ach-points">+${a.points} Prestige</div>
+        </div>
+      `;
+    }
+    return `
+      <div class="ach-card locked">
+        <div class="ach-name">???</div>
+        <div class="ach-desc">${a.desc}</div>
+        <div class="ach-points">+${a.points} Prestige</div>
+      </div>
+    `;
+  }).join("");
+
   pageContent.innerHTML = `
     <div class="page">
       <h2 class="page-title">Achievements</h2>
-      <p class="page-sub">Permanent · grant Prestige Points</p>
-      <div class="placeholder-box">
-        <p>Coming soon. Will persist through prestige.</p>
-      </div>
+      <p class="page-sub">${info.unlockedCount}/${info.total} unlocked · ${info.prestigePoints} Prestige Points</p>
+      <div class="ach-list">${rows}</div>
+      <p class="hint">Achievements stay through Prestige (when added). Full Reset still clears them.</p>
     </div>
   `;
 }
