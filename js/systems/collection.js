@@ -1,6 +1,6 @@
 import { DINOSAURS, RARITY_MULTIPLIER, RANK_MULTIPLIER } from "../data/dinosaurs.js";
-
 import { initPathState } from "./path.js";
+import { initConveyorState } from "./conveyor.js";
 
 export function createPlayerState() {
   return {
@@ -12,7 +12,8 @@ export function createPlayerState() {
     packsOpened: 0,
     started: false,
     currentPage: "home",
-    path: initPathState()
+    path: initPathState(),
+    conveyor: initConveyorState()
   };
 }
 
