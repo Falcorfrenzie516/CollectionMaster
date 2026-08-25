@@ -555,3 +555,97 @@ button.danger {
   width: 100%;
   max-width: 240px;
 }
+
+/* ---------- TOKENS ---------- */
+.equipped-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.token-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.token-card {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  text-align: center;
+}
+
+.token-card.equipped {
+  border-color: var(--accent);
+}
+
+.token-card.locked {
+  opacity: 0.4;
+}
+
+.token-icon {
+  font-size: 1.6rem;
+  margin-bottom: 0.25rem;
+}
+
+.token-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.token-desc {
+  color: var(--muted);
+  font-size: 0.78rem;
+  margin: 0.2rem 0 0.5rem;
+}
+
+.token-status {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.equipped-label {
+  color: var(--accent);
+  font-weight: 600;
+  margin-top: 0.35rem;
+}
+
+.token-colors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  justify-content: center;
+  margin-top: 0.35rem;
+}
+
+.color-chip {
+  border: none;
+  border-radius: 999px;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  cursor: pointer;
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.color-chip.active {
+  outline: 2px solid white;
+}
+
+.color-chip.rarity-basic { background: #64748b; }
+.color-chip.rarity-gold { background: #a16207; color: #fef3c7; }
+.color-chip.rarity-emerald { background: #166534; color: #bbf7d0; }
+.color-chip.rarity-sapphire { background: #1e40af; color: #dbeafe; }
+.color-chip.rarity-ruby { background: #9f1239; color: #fecdd3; }
+.color-chip.rarity-diamond { background: #0e7490; color: #cffafe; }
+.color-chip.rarity-rainbow { background: linear-gradient(90deg, #c084fc, #f472b6); color: white; }
