@@ -60,8 +60,15 @@ if (!player.tokens) {
   player.tokens = initTokensState();
 }
 syncTokens(player);
-if (player.path.lifetimeIncome === 0 && (player.incomePerSecond > 0 || player.money > 0)) {
-  player.path.lifetimeIncome = Math.max(player.money, player.incomePerSecond * 60);
+// One-time migration for very old saves that never tracked lifetime income
+if (
+  player.path.lifetimeIncome === 0 &&
+  player.path.currentNode === 0 &&
+  (player.path.claimedNodes || []).length <= 1 &&
+  player.packsOpened > 2 &&
+  player.incomePerSecond > 0
+) {
+  player.path.lifetimeIncome = Math.max(player.money, player.incomePerSecond * 30);
 }
 saveGame(player);
 
@@ -287,6 +294,17 @@ export function setPage(page) {
 export function resetGame() {
   clearSave();
   player = createPlayerState();
+  // Guarantee clean path / systems
+  player.path = {
+    currentNode: 0,
+    lifetimeIncome: 0,
+    claimedNodes: [0],
+    unlockedFlags: {}
+  };
+  player.conveyor = initConveyorState();
+  player.expeditions = initExpeditionsState();
+  player.tokens = initTokensState();
+  saveGame(player);
   return player;
 }
 
