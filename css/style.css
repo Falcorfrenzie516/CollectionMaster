@@ -509,3 +509,49 @@ button.danger {
     padding: 0.4rem 0.55rem;
   }
 }
+
+/* ---------- EXPEDITIONS ---------- */
+.exp-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.exp-card {
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 12px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.exp-card.status-ready {
+  border-color: var(--accent);
+}
+
+.exp-card.status-running {
+  opacity: 0.85;
+}
+
+.exp-name {
+  font-weight: 700;
+  font-size: 1.05rem;
+  margin-bottom: 0.2rem;
+}
+
+.exp-desc {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+
+.exp-meta {
+  color: var(--muted);
+  font-size: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.exp-card .primary {
+  width: 100%;
+  max-width: 240px;
+}
