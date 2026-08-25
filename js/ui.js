@@ -411,7 +411,13 @@ setInterval(() => {
     tickIncome();
     updateHeader();
   }
+  const before = getConveyor().offers.length;
   tickConveyor();
+  const after = getConveyor().offers.length;
+  // Live-update Conveyor page when new offers appear
+  if (p.currentPage === "conveyor" && after !== before) {
+    renderConveyor();
+  }
 }, 1000);
 
 // -----------------------------
