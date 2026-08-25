@@ -31,6 +31,13 @@ import {
   isExpeditionsUnlocked,
   EXPEDITION_DEFS
 } from "./systems/expeditions.js";
+import {
+  initTokensState,
+  syncTokens,
+  equipToken,
+  getEquippedToken,
+  getAllTokenDefs
+} from "./systems/tokens.js";
 
 let player = loadGame() || createPlayerState();
 
@@ -49,6 +56,10 @@ if (!player.conveyor) {
 if (!player.expeditions) {
   player.expeditions = initExpeditionsState();
 }
+if (!player.tokens) {
+  player.tokens = initTokensState();
+}
+syncTokens(player);
 if (player.path.lifetimeIncome === 0 && (player.incomePerSecond > 0 || player.money > 0)) {
   player.path.lifetimeIncome = Math.max(player.money, player.incomePerSecond * 60);
 }
@@ -102,6 +113,10 @@ export function startCollecting() {
 
   player.started = true;
   player.packsOpened += 2;
+  if (!player.tokens) player.tokens = initTokensState();
+  player.tokens.unlocked.explorer = true;
+  player.tokens.equipped = "explorer";
+  syncTokens(player);
   saveGame(player);
 
   return {
@@ -159,6 +174,7 @@ export function getConveyor() {
 }
 
 export function tickIncome() {
+  syncTokens(player);
   const gained = player.incomePerSecond;
   player.money += gained;
   player.money = Math.floor(player.money);
@@ -240,6 +256,25 @@ export function getExpeditionsInfo() {
   };
 }
 
+
+export function tryEquipToken(tokenId, color = "basic") {
+  const result = equipToken(player, tokenId, color);
+  if (!result.error) saveGame(player);
+  return result;
+}
+
+export function getTokensInfo() {
+  syncTokens(player);
+  return {
+    defs: getAllTokenDefs(),
+    unlocked: player.tokens.unlocked,
+    colors: player.tokens.colors,
+    equipped: player.tokens.equipped,
+    equippedColor: player.tokens.equippedColor,
+    current: getEquippedToken(player)
+  };
+}
+
 export function getPlayer() {
   return player;
 }
@@ -287,6 +322,8 @@ if (typeof window !== "undefined") {
     claimExpedition,
     tickAllExpeditions,
     getExpeditionsInfo,
+    tryEquipToken,
+    getTokensInfo,
     getPlayer,
     setPage,
     resetGame,

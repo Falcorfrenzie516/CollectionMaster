@@ -14,7 +14,9 @@ import {
   tryStartExpedition,
   claimExpedition,
   tickAllExpeditions,
-  getExpeditionsInfo
+  getExpeditionsInfo,
+  tryEquipToken,
+  getTokensInfo
 } from "./main.js";
 import { getCardEarnings, getCollectionSorted, getCardKey } from "./systems/collection.js";
 import { DINOSAURS, RARITIES } from "./data/dinosaurs.js";
@@ -535,16 +537,62 @@ function renderAchievements() {
 
 // ----- TOKENS -----
 function renderTokens() {
+  const info = getTokensInfo();
+  const current = info.current;
+
+  const list = info.defs.map(def => {
+    const unlocked = !!info.unlocked[def.id];
+    const isEquipped = info.equipped === def.id;
+    const colors = info.colors[def.id] || {};
+    const colorKeys = Object.keys(colors).filter(c => colors[c]);
+
+    if (!unlocked) {
+      return `
+        <div class="token-card locked">
+          <div class="token-icon">?</div>
+          <div class="token-name">${def.type === "set" ? "???" : def.name}</div>
+          <div class="token-desc">${def.desc}</div>
+          <div class="token-status">Locked</div>
+        </div>
+      `;
+    }
+
+    const colorBtns = colorKeys.map(c => {
+      const active = isEquipped && info.equippedColor === c;
+      return `<button class="color-chip rarity-${c} ${active ? "active" : ""}" data-token="${def.id}" data-color="${c}">${c}</button>`;
+    }).join("");
+
+    return `
+      <div class="token-card ${isEquipped ? "equipped" : ""}">
+        <div class="token-icon">${def.icon}</div>
+        <div class="token-name">${def.name}</div>
+        <div class="token-desc">${def.desc}</div>
+        <div class="token-colors">${colorBtns || "<span class='token-status'>Basic</span>"}</div>
+        ${isEquipped ? '<div class="token-status equipped-label">Equipped</div>' : ""}
+      </div>
+    `;
+  }).join("");
+
   pageContent.innerHTML = `
     <div class="page">
       <h2 class="page-title">Tokens</h2>
-      <p class="page-sub">Path pieces you can switch anytime</p>
-      <div class="placeholder-box">
-        <p>♟️ The Explorer (starter token)</p>
-        <p>Set tokens unlock when you complete all rarities of a dinosaur.</p>
+      <p class="page-sub">Path pieces · switch anytime</p>
+      <div class="equipped-banner">
+        <span class="token-icon">${current.icon}</span>
+        <span>Using <strong>${current.name}</strong> (${current.color})</span>
       </div>
+      <div class="token-list">${list}</div>
+      <p class="hint">Complete all 7 rarities of a dinosaur to unlock its set token. Max Rank 5 on a rarity unlocks that color.</p>
     </div>
   `;
+
+  pageContent.querySelectorAll(".color-chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const r = tryEquipToken(btn.dataset.token, btn.dataset.color);
+      if (r.error) { alert(r.error); return; }
+      renderTokens();
+    });
+  });
 }
 
 // -----------------------------
