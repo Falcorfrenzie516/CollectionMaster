@@ -1341,3 +1341,115 @@ button.danger {
 .pull-new { color: #86efac; }
 .pull-rankup { color: #93c5fd; }
 .pull-sold { color: #fca5a5; }
+
+/* ---------- DEN TABLE / SORT PILE ---------- */
+.den-table {
+  background: linear-gradient(180deg, #2a1d12 0%, #1a140f 100%);
+  border: 1px solid rgba(232, 194, 122, 0.28);
+  border-radius: 16px;
+  padding: 0.85rem 0.8rem 1rem;
+}
+
+.den-table-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
+}
+
+.den-table-title {
+  font-size: 1rem;
+  margin-top: 0.1rem;
+}
+
+.den-table-counts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #e8c27a;
+}
+
+.pack-pile {
+  margin-bottom: 0.9rem;
+}
+
+.pile-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.65rem;
+  min-height: 3.2rem;
+}
+
+.sealed-pack {
+  width: 3.1rem;
+  text-align: center;
+}
+
+.sealed-pack-face {
+  height: 3.4rem;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: #fde68a;
+  background:
+    linear-gradient(160deg, #7c2d12 0%, #b45309 55%, #f59e0b 100%);
+  border: 2px solid #fbbf24;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.28);
+}
+
+.sealed-pack-name {
+  margin-top: 0.2rem;
+  font-size: 0.58rem;
+  color: #d6d3d1;
+  line-height: 1.2;
+}
+
+.sort-pile-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.sort-pile-head .primary {
+  padding: 0.45rem 0.7rem;
+  font-size: 0.78rem;
+}
+
+.sort-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+  margin-top: 0.55rem;
+}
+
+.sort-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+
+.sort-reason {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.reason-first { color: #86efac; }
+.reason-fifth, .reason-maxed { color: #fbbf24; }
+.reason-dup { color: #93c5fd; }
+
+.btn-file-card {
+  width: 100%;
+  padding: 0.45rem 0.5rem;
+  font-size: 0.75rem;
+}
