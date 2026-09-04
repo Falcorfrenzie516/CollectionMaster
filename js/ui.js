@@ -42,6 +42,115 @@ function formatMoney(n) {
   return "$" + Math.floor(n).toLocaleString();
 }
 
+function dietLabel(diet) {
+  return diet === "herbivore" ? "Leaf" : "Fang";
+}
+
+function dinoArtMark(dino) {
+  return dino.diet === "herbivore" ? "◆" : "▲";
+}
+
+function bestOwnedCard(state, dinoId) {
+  for (let i = RARITIES.length - 1; i >= 0; i--) {
+    const card = state.cards[getCardKey(dinoId, RARITIES[i])];
+    if (card) return card;
+  }
+  return null;
+}
+
+function renderDinoCard(dino, card = null, opts = {}) {
+  const unknown = !!opts.unknown;
+  const compact = !!opts.compact;
+  const rarity = card?.rarity || opts.rarity || "basic";
+  const rank = card?.rank || 1;
+  const earn = card ? getCardEarnings(card) : 0;
+  const type = dietLabel(dino.diet);
+  const env = (dino.environment || "").replace(/_/g, " ");
+
+  if (unknown) {
+    return `
+      <article class="tcg-card tcg-back ${compact ? "compact" : ""}">
+        <div class="tcg-back-seal">CM</div>
+        <div class="tcg-back-name">Collection Master</div>
+        <div class="tcg-back-sub">Dinosaur Series</div>
+      </article>
+    `;
+  }
+
+  return `
+    <article class="tcg-card diet-${dino.diet} rarity-${rarity} ${compact ? "compact" : ""}">
+      <header class="tcg-top">
+        <span class="tcg-name">${dino.name}</span>
+        <span class="tcg-hp"><em>HP</em> ${dino.hp || 50}</span>
+      </header>
+      <div class="tcg-type">${type}</div>
+      <div class="tcg-art">
+        <span class="tcg-mark">${dinoArtMark(dino)}</span>
+        <span class="tcg-no">No. ${dino.no || "000"}</span>
+      </div>
+      <div class="tcg-attack">
+        <span class="tcg-move">${dino.attack || "Fossil Strike"}</span>
+        <span class="tcg-power">${dino.baseEarnings}</span>
+      </div>
+      <footer class="tcg-foot">
+        <span class="tcg-rarity">${rarity}</span>
+        <span class="tcg-rank">${card ? `Rank ${rank}/5` : env}</span>
+        ${card ? `<span class="tcg-earn">${formatMoney(earn)}/s</span>` : ""}
+      </footer>
+    </article>
+  `;
+}
+
+function showPackReveal(cardList, results = [], onDone) {
+  const existing = document.getElementById("pack-reveal");
+  if (existing) existing.remove();
+
+  const resultByKey = {};
+  for (const r of results) {
+    if (r.card) resultByKey[getCardKey(r.card.id, r.card.rarity)] = r.type;
+  }
+
+  const overlay = document.createElement("div");
+  overlay.id = "pack-reveal";
+  overlay.className = "pack-reveal";
+  overlay.innerHTML = `
+    <div class="pack-reveal-panel">
+      <div class="pack-reveal-kicker">Pack opened</div>
+      <h2>Dinosaur cards</h2>
+      <p class="hint">Tap a card to flip it.</p>
+      <div class="pack-reveal-grid">
+        ${cardList.map((card, i) => {
+          const dino = DINOSAURS.find(d => d.id === card.id) || card;
+          const tag = resultByKey[getCardKey(card.id, card.rarity)];
+          const tagLabel = tag === "new" ? "New" : tag === "rankup" ? "Rank up" : tag === "sold" ? "Sold" : "";
+          return `
+            <button class="flip-wrap" data-flip="${i}">
+              <div class="flip-inner">
+                <div class="flip-face flip-back">${renderDinoCard(dino, card, { unknown: true, compact: true })}</div>
+                <div class="flip-face flip-front">
+                  ${renderDinoCard(dino, card, { compact: true })}
+                  ${tagLabel ? `<span class="pull-tag pull-${tag}">${tagLabel}</span>` : ""}
+                </div>
+              </div>
+            </button>
+          `;
+        }).join("")}
+      </div>
+      <button id="btn-reveal-done" class="primary large">Add to binder</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  overlay.querySelectorAll("[data-flip]").forEach(btn => {
+    btn.addEventListener("click", () => btn.classList.add("flipped"));
+  });
+
+  document.getElementById("btn-reveal-done").addEventListener("click", () => {
+    overlay.remove();
+    if (onDone) onDone();
+  });
+}
+
 // -----------------------------
 // Header stats
 // -----------------------------
@@ -71,6 +180,7 @@ tabButtons.forEach(btn => {
 // Page renderers
 // -----------------------------
 function renderPage(page) {
+  pageContent.classList.toggle("is-home", page === "home");
   switch (page) {
     case "home":
       renderHome();
@@ -109,84 +219,123 @@ function renderHome() {
   const achCount = Object.keys(p.achievements?.unlocked || {}).length;
   const tokenCount = Object.keys(p.tokens?.unlocked || {}).length;
   const offerCount = p.conveyor?.offers?.length || 0;
-  const equipped = p.tokens?.equipped === "explorer" ? "Explorer" : (p.tokens?.equipped || "Explorer");
+  const discovered = p.totalDiscovered || 0;
+  const speciesTotal = DINOSAURS.length;
+  const discoverPct = Math.floor((discovered / speciesTotal) * 100);
+  const equippedRaw = p.tokens?.equipped || "explorer";
+  const equipped = equippedRaw.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+  const incomeLive = p.started && p.incomePerSecond > 0;
 
   pageContent.innerHTML = `
     <div class="home-room">
-      <div class="room-hero">
-        <div class="room-hero-label">Collector's Room</div>
-        <p class="room-hero-sub">${p.started ? "Income running · pick a station" : "Your museum starts here"}</p>
-      </div>
-
-      <!-- Featured: Path table -->
-      <button class="room-feature" data-goto="path">
-        <div class="feature-icon">🗺️</div>
-        <div class="feature-text">
-          <div class="room-label">Path Table</div>
-          <div class="room-desc">Node ${pathNode}/20 · slide your token</div>
+      <section class="room-stage">
+        <div class="room-glow"></div>
+        <div class="room-hud">
+          <div class="room-kicker">Collector's Room</div>
+          <h1 class="room-title">The Den</h1>
+          <p class="room-hero-sub">${p.started
+            ? (incomeLive ? "Lamp's on. Cards are earning." : "Room is open — start a station.")
+            : "Dusty table. Unopened packs. The collection starts here."}</p>
+          <div class="room-chips">
+            <span class="chip ${p.started ? "chip-live" : ""}">${p.started ? "Idle on" : "Idle off"}</span>
+            <span class="chip">${discovered}/${speciesTotal} found</span>
+            <span class="chip">Node ${pathNode}/20</span>
+          </div>
         </div>
-        <div class="feature-arrow">›</div>
-      </button>
 
-      <div class="room-section-label">Stations</div>
-      <div class="room-grid">
-        <button class="room-card" data-goto="collections">
-          <div class="room-icon">📘</div>
+        <button class="table-hotspot" data-goto="path">
+          <div class="table-hotspot-top">
+            <span class="table-tag">Centerpiece</span>
+            <span class="table-node">Node ${pathNode}</span>
+          </div>
+          <div class="table-hotspot-body">
+            <div class="table-mark" aria-hidden="true">
+              <svg viewBox="0 0 64 40" width="56" height="34">
+                <path d="M6 28c8-12 16-18 26-18s18 6 26 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
+                <circle cx="32" cy="12" r="4.2" fill="currentColor"/>
+                <circle cx="14" cy="26" r="2.4" fill="currentColor" opacity=".7"/>
+                <circle cx="50" cy="26" r="2.4" fill="currentColor" opacity=".7"/>
+              </svg>
+            </div>
+            <div class="feature-text">
+              <div class="room-label">Path Table</div>
+              <div class="room-desc">Unrolled map · ${equipped} token ready to slide</div>
+            </div>
+            <div class="feature-arrow">›</div>
+          </div>
+          <div class="table-progress" aria-hidden="true">
+            <i style="width:${Math.min(100, (pathNode / 20) * 100)}%"></i>
+          </div>
+        </button>
+      </section>
+
+      ${!p.started ? `
+        <div class="start-area start-pack">
+          <button id="btn-start" class="primary large start-pack-btn">
+            <span class="pack-seal">★</span>
+            Rip the starter packs
+          </button>
+          <p class="hint">2 starter packs + Explorer token. Income begins immediately.</p>
+        </div>
+      ` : `
+        <div class="income-ribbon">
+          <span class="pulse-dot"></span>
+          Collection earning ${formatMoney(p.incomePerSecond)}/sec
+        </div>
+      `}
+
+      <div class="room-section-label">Stations along the wall</div>
+      <div class="room-grid stations">
+        <button class="room-card tone-book" data-goto="collections">
+          <div class="card-art book-art" aria-hidden="true"></div>
           <div class="room-label">Dinosaur Book</div>
-          <div class="room-desc">${p.totalDiscovered}/12 species</div>
+          <div class="room-desc">${discovered}/${speciesTotal} cards</div>
+          <div class="mini-bar"><i style="width:${discoverPct}%"></i></div>
         </button>
 
-        <button class="room-card" data-goto="conveyor">
-          <div class="room-icon">📦</div>
+        <button class="room-card tone-pack" data-goto="conveyor">
+          <div class="card-art pack-art" aria-hidden="true"></div>
           <div class="room-label">Conveyor</div>
           <div class="room-desc">${offerCount} pack${offerCount === 1 ? "" : "s"} waiting</div>
         </button>
 
-        <button class="room-card ${expOpen ? "" : "dimmed"}" data-goto="expeditions">
-          <div class="room-icon">🏕️</div>
+        <button class="room-card tone-camp ${expOpen ? "" : "dimmed"}" data-goto="expeditions">
+          <div class="card-art camp-art" aria-hidden="true"></div>
           <div class="room-label">Expeditions</div>
-          <div class="room-desc">${expOpen ? "Camp open" : "Locked on Path"}</div>
+          <div class="room-desc">${expOpen ? "Camp open" : "Locked on the Path"}</div>
         </button>
 
-        <button class="room-card dimmed" data-goto="events">
-          <div class="room-icon">🎄</div>
+        <button class="room-card tone-event dimmed" data-goto="events">
+          <div class="card-art event-art" aria-hidden="true"></div>
           <div class="room-label">Event Books</div>
-          <div class="room-desc">Graphics later</div>
+          <div class="room-desc">Seasonal sets later</div>
         </button>
       </div>
 
-      <div class="room-section-label">Progress</div>
-      <div class="room-grid">
-        <button class="room-card" data-goto="achievements">
+      <div class="room-section-label">Display case</div>
+      <div class="room-grid display-case">
+        <button class="room-card tone-trophy" data-goto="achievements">
           <div class="room-icon">🏆</div>
           <div class="room-label">Achievements</div>
           <div class="room-desc">${achCount} unlocked</div>
         </button>
 
-        <button class="room-card" data-goto="tokens">
+        <button class="room-card tone-token" data-goto="tokens">
           <div class="room-icon">♟️</div>
           <div class="room-label">Tokens</div>
-          <div class="room-desc">${tokenCount} owned</div>
+          <div class="room-desc">${tokenCount} owned · ${equipped}</div>
         </button>
       </div>
 
-      ${!p.started ? `
-        <div class="start-area">
-          <button id="btn-start" class="primary large">Start Collecting</button>
-          <p class="hint">Opens 2 starter packs + Explorer token</p>
-        </div>
-      ` : `
-        <div class="start-area">
-          <p class="hint">Idle income is active.</p>
-        </div>
-      `}
-
       <div class="prestige-area" id="prestige-panel"></div>
 
-      <div class="reset-area">
-        <button id="btn-reset" class="danger">Reset Progress</button>
-        <p class="hint">Full wipe (dev) — includes achievements</p>
-      </div>
+      <details class="desk-drawer">
+        <summary>Desk drawer</summary>
+        <div class="reset-area">
+          <button id="btn-reset" class="danger">Reset Progress</button>
+          <p class="hint">Full wipe (dev) — includes achievements</p>
+        </div>
+      </details>
     </div>
   `;
 
@@ -202,7 +351,8 @@ function renderHome() {
         alert(result.error);
         return;
       }
-      navigate("collections");
+      const pulled = (result.packs || []).flat();
+      showPackReveal(pulled, result.results || [], () => navigate("collections"));
     });
   }
 
@@ -222,7 +372,8 @@ function renderHome() {
     const info = getPrestigeInfo();
     const p2 = getPlayer();
     if (!p2.started) {
-      panel.innerHTML = `<p class="hint">Prestige unlocks after you start collecting.</p>`;
+      panel.innerHTML = "";
+      panel.hidden = true;
     } else {
       panel.innerHTML = `
         <h3 class="section-title">Prestige</h3>
@@ -254,7 +405,6 @@ function renderHome() {
 function renderCollections() {
   const p = getPlayer();
 
-  // Detail page for one dinosaur
   if (openDinoId) {
     const dino = DINOSAURS.find(d => d.id === openDinoId);
     if (!dino) {
@@ -263,38 +413,25 @@ function renderCollections() {
       return;
     }
 
-    const slots = RARITIES.map(rarity => {
-      const key = getCardKey(dino.id, rarity);
-      const card = p.cards[key];
-      if (!card) {
-        return `
-          <div class="rarity-slot empty-slot">
-            <span class="slot-rarity">${rarity}</span>
-            <span class="slot-status">?</span>
-            <span class="slot-rank">—</span>
-            <span class="slot-earn">—</span>
-          </div>
-        `;
-      }
-      const earn = getCardEarnings(card);
-      return `
-        <div class="rarity-slot rarity-${rarity}">
-          <span class="slot-rarity">${rarity}</span>
-          <span class="slot-status">Owned</span>
-          <span class="slot-rank">Rank ${card.rank}/5</span>
-          <span class="slot-earn">${formatMoney(earn)}/s</span>
-        </div>
-      `;
-    }).join("");
-
     const ownedCount = RARITIES.filter(r => p.cards[getCardKey(dino.id, r)]).length;
+    const slots = RARITIES.map(rarity => {
+      const card = p.cards[getCardKey(dino.id, rarity)];
+      if (!card) {
+        return `<div class="binder-slot empty">${renderDinoCard(dino, null, { unknown: true, compact: true })}<span class="slot-cap">${rarity}</span></div>`;
+      }
+      return `<div class="binder-slot">${renderDinoCard(dino, card, { compact: true })}</div>`;
+    }).join("");
 
     pageContent.innerHTML = `
       <div class="page">
-        <button id="btn-book-back" class="text-btn">← Back to Book</button>
+        <button id="btn-book-back" class="text-btn">← Binder</button>
         <h2 class="page-title">${dino.name}</h2>
-        <p class="page-sub">${dino.diet} · ${dino.environment.replace(/_/g, " ")} · ${ownedCount}/7 rarities</p>
-        <div class="rarity-slots">
+        <p class="page-sub">${dietLabel(dino.diet)} · ${dino.environment.replace(/_/g, " ")} · ${ownedCount}/7 prints</p>
+        <div class="hero-card">
+          ${renderDinoCard(dino, bestOwnedCard(p, dino.id))}
+        </div>
+        <h3 class="section-title">Prints</h3>
+        <div class="binder-grid prints">
           ${slots}
         </div>
       </div>
@@ -307,33 +444,24 @@ function renderCollections() {
     return;
   }
 
-  // Index — all dinos, lowest base earnings first
-  const sorted = [...DINOSAURS].sort((a, b) => a.baseEarnings - b.baseEarnings);
-
-  const rows = sorted.map(dino => {
+  const tiles = DINOSAURS.map(dino => {
     const discovered = !!p.discovered[dino.id];
+    const owned = bestOwnedCard(p, dino.id);
     const ownedRarities = RARITIES.filter(r => p.cards[getCardKey(dino.id, r)]).length;
-    let totalEarn = 0;
-    for (const r of RARITIES) {
-      const c = p.cards[getCardKey(dino.id, r)];
-      if (c) totalEarn += getCardEarnings(c);
-    }
-
     return `
-      <button class="book-row ${discovered ? "discovered" : "unknown"}" data-dino="${dino.id}">
-        <span class="book-name">${discovered ? dino.name : "???"}</span>
-        <span class="book-progress">${discovered ? ownedRarities + "/7" : "—"}</span>
-        <span class="book-earn">${discovered ? formatMoney(totalEarn) + "/s" : "—"}</span>
+      <button class="binder-tile ${discovered ? "discovered" : "unknown"}" data-dino="${dino.id}">
+        ${renderDinoCard(dino, owned, { unknown: !discovered, compact: true })}
+        <span class="tile-cap">${discovered ? ownedRarities + "/7 prints" : "Not found"}</span>
       </button>
     `;
   }).join("");
 
   pageContent.innerHTML = `
     <div class="page">
-      <h2 class="page-title">Dinosaur Book</h2>
-      <p class="page-sub">${p.totalDiscovered}/12 species · tap a page</p>
-      <div class="book-index">
-        ${rows}
+      <h2 class="page-title">Dinosaur Binder</h2>
+      <p class="page-sub">${p.totalDiscovered}/12 dinosaurs · ${Object.keys(p.cards).length} prints owned</p>
+      <div class="binder-grid">
+        ${tiles}
       </div>
     </div>
   `;
@@ -389,7 +517,7 @@ function renderConveyor() {
         return;
       }
       updateHeader();
-      renderConveyor();
+      showPackReveal(result.cards || [], result.results || [], () => renderConveyor());
     });
   });
 }
@@ -553,7 +681,7 @@ function renderExpeditions() {
       const r = claimExpedition(btn.dataset.id);
       if (r.error) { alert(r.error); return; }
       updateHeader();
-      renderExpeditions();
+      showPackReveal(r.cards || [], r.results || [], () => renderExpeditions());
     });
   });
 }
