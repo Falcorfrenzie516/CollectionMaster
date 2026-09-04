@@ -145,10 +145,16 @@ function renderDinoCard(dino, card = null, opts = {}) {
     `;
   }
 
+  const fxRank = rank >= 2 && rank <= 5 ? rank : 0;
+  const fx = fxRank
+    ? `<img class="dino-fx" src="assets/fx/${dino.id}/r${fxRank}.png" alt="" onerror="this.remove()" />`
+    : "";
+
   return `
-    <article class="dino-card diet-${dino.diet} rarity-${rarity} ${compact ? "compact" : ""} ${maxed ? "maxed" : ""}">
+    <article class="dino-card diet-${dino.diet} rarity-${rarity} rank-${rank || 0} ${compact ? "compact" : ""} ${maxed ? "maxed" : ""}">
       <div class="dino-window">
         <img class="dino-photo" src="assets/dinos/${dino.id}.jpg" alt="${dino.name}" onerror="this.style.visibility='hidden'" />
+        ${fx}
       </div>
       <img class="dino-frame" src="${frameSrc(rarity)}" alt="" />
       ${cardTextOverlay({ name, rank: card ? rank : "—", earn })}
