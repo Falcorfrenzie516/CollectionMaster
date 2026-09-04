@@ -79,7 +79,7 @@ function renderDinoCard(dino, card = null, opts = {}) {
   const rank = card?.rank || 0;
   const earn = card ? getCardEarnings(card) : (dino.baseEarnings || 0);
   const maxed = rank >= 5;
-  const name = (dino.name || "Unknown").toUpperCase();
+  const name = (dino.short || dino.name || "Unknown").toUpperCase();
 
   if (unknown) {
     return `
@@ -89,9 +89,10 @@ function renderDinoCard(dino, card = null, opts = {}) {
           <span class="dino-name">???</span>
           <span class="dino-rank">?</span>
         </div>
-        <div class="dino-art">
-          <img src="assets/card-back.png" alt="" />
+        <div class="dino-window">
+          <img class="dino-photo" src="assets/card-back.png" alt="" />
         </div>
+        <img class="dino-frame" src="assets/card-frame.jpg" alt="" />
       </article>
     `;
   }
@@ -103,9 +104,10 @@ function renderDinoCard(dino, card = null, opts = {}) {
         <span class="dino-name">${name}</span>
         <span class="dino-rank">${card ? rank : "—"}</span>
       </div>
-      <div class="dino-art">
-        <img src="assets/dinos/${dino.id}.jpg" alt="${dino.name}" />
+      <div class="dino-window">
+        <img class="dino-photo" src="assets/dinos/${dino.id}.jpg" alt="${dino.name}" onerror="this.style.visibility='hidden'" />
       </div>
+      <img class="dino-frame" src="assets/card-frame.jpg" alt="" />
       <div class="dino-earn">${formatRate(earn)}</div>
       ${maxed ? `<span class="dino-maxsold">MAX Sold</span>` : ""}
     </article>
@@ -164,17 +166,26 @@ function playPackTheater(cardList, onDone) {
       ? `glow-${card.rarity}`
       : "";
 
-    slot.innerHTML = `
-      <div class="theater-flip flipped ${glow}">
-        <div class="theater-face back">
-          <img src="assets/card-back.png" alt="" />
+    let flip = slot.querySelector(".theater-flip");
+    if (!flip) {
+      slot.innerHTML = `
+        <div class="theater-flip">
+          <div class="theater-face back"><img src="assets/card-back.png" alt="" /></div>
+          <div class="theater-face front"></div>
         </div>
-        <div class="theater-face front">
-          ${isNew ? `<span class="new-burst">NEW</span>` : ""}
-          ${renderDinoCard(dino, card)}
-        </div>
-      </div>
+      `;
+      flip = slot.querySelector(".theater-flip");
+    }
+    const front = flip.querySelector(".theater-face.front");
+    front.innerHTML = `
+      ${isNew ? `<span class="new-burst">NEW</span>` : ""}
+      ${renderDinoCard(dino, card)}
     `;
+    slot.className = "theater-card-slot " + glow;
+    flip.classList.remove("flying");
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => flip.classList.add("flipped"));
+    });
     banner.textContent = isNew ? `${rarityBanner(card.rarity)} · NEW` : rarityBanner(card.rarity);
     banner.className = "theater-banner show " + (isNew ? "is-new" : isMax ? "is-max" : "is-dup");
     countEl.textContent = `${index + 1} / ${cardList.length}`;
@@ -195,6 +206,7 @@ function playPackTheater(cardList, onDone) {
     banner.className = "theater-banner";
     banner.textContent = "";
     packEl.classList.add("burst");
+    slot.className = "theater-card-slot";
     slot.innerHTML = `
       <div class="theater-flip flying">
         <div class="theater-face back">
