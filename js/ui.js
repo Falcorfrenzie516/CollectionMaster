@@ -46,12 +46,22 @@ function formatMoney(n) {
   return "$" + Math.floor(n).toLocaleString();
 }
 
-function dietLabel(diet) {
-  return diet === "herbivore" ? "Leaf" : "Fang";
+function formatRate(n) {
+  const v = Math.floor(n || 0);
+  if (v >= 1000000) return (v / 1000000).toFixed(1).replace(/\.0$/, "") + "m /s";
+  if (v >= 1000) return (v / 1000).toFixed(1).replace(/\.0$/, "") + "k /s";
+  return v + " /s";
 }
 
-function dinoArtMark(dino) {
-  return dino.diet === "herbivore" ? "◆" : "▲";
+function dietLabel(diet) {
+  return diet === "herbivore" ? "Herbivore" : "Carnivore";
+}
+
+function classIcon(diet) {
+  if (diet === "herbivore") {
+    return `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M12 2c2 3 3 6 3 8a3 3 0 0 1-6 0c0-2 1-5 3-8zm-1 11.2V22h2v-8.8A6.2 6.2 0 0 1 8 20h2c0-2.2.6-4.2 1-6.8z"/></svg>`;
+  }
+  return `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M4 14c4-1 7-4 9-8l7 3-3 3c-2 2-5 4-9 5l-4-3zm2.2 1.6L8 19l3.2-1.2C8.8 17.2 6.8 16.4 6.2 15.6z"/></svg>`;
 }
 
 function bestOwnedCard(state, dinoId) {
@@ -66,41 +76,38 @@ function renderDinoCard(dino, card = null, opts = {}) {
   const unknown = !!opts.unknown;
   const compact = !!opts.compact;
   const rarity = card?.rarity || opts.rarity || "basic";
-  const rank = card?.rank || 1;
-  const earn = card ? getCardEarnings(card) : 0;
-  const type = dietLabel(dino.diet);
-  const env = (dino.environment || "").replace(/_/g, " ");
+  const rank = card?.rank || 0;
+  const earn = card ? getCardEarnings(card) : (dino.baseEarnings || 0);
+  const maxed = rank >= 5;
+  const name = (dino.name || "Unknown").toUpperCase();
 
   if (unknown) {
     return `
-      <article class="tcg-card tcg-back ${compact ? "compact" : ""}">
-        <div class="tcg-back-seal">CM</div>
-        <div class="tcg-back-name">Collection Master</div>
-        <div class="tcg-back-sub">Dinosaur Series</div>
+      <article class="dino-card unknown ${compact ? "compact" : ""}">
+        <div class="dino-chrome">
+          <span class="dino-class"></span>
+          <span class="dino-name">???</span>
+          <span class="dino-rank">?</span>
+        </div>
+        <div class="dino-art">
+          <img src="assets/card-back.png" alt="" />
+        </div>
       </article>
     `;
   }
 
   return `
-    <article class="tcg-card diet-${dino.diet} rarity-${rarity} ${compact ? "compact" : ""}">
-      <header class="tcg-top">
-        <span class="tcg-name">${dino.name}</span>
-        <span class="tcg-hp"><em>HP</em> ${dino.hp || 50}</span>
-      </header>
-      <div class="tcg-type">${type}</div>
-      <div class="tcg-art">
-        <span class="tcg-mark">${dinoArtMark(dino)}</span>
-        <span class="tcg-no">No. ${dino.no || "000"}</span>
+    <article class="dino-card diet-${dino.diet} rarity-${rarity} ${compact ? "compact" : ""} ${maxed ? "maxed" : ""}">
+      <div class="dino-chrome">
+        <span class="dino-class" title="${dietLabel(dino.diet)}">${classIcon(dino.diet)}</span>
+        <span class="dino-name">${name}</span>
+        <span class="dino-rank">${card ? rank : "—"}</span>
       </div>
-      <div class="tcg-attack">
-        <span class="tcg-move">${dino.attack || "Fossil Strike"}</span>
-        <span class="tcg-power">${dino.baseEarnings}</span>
+      <div class="dino-art">
+        <img src="assets/dinos/${dino.id}.jpg" alt="${dino.name}" />
       </div>
-      <footer class="tcg-foot">
-        <span class="tcg-rarity">${rarity}</span>
-        <span class="tcg-rank">${card ? `Rank ${rank}/5` : env}</span>
-        ${card ? `<span class="tcg-earn">${formatMoney(earn)}/s</span>` : ""}
-      </footer>
+      <div class="dino-earn">${formatRate(earn)}</div>
+      ${maxed ? `<span class="dino-maxsold">MAX Sold</span>` : ""}
     </article>
   `;
 }
