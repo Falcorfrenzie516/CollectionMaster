@@ -1610,7 +1610,7 @@ button.danger {
   background: transparent;
 }
 
-.theater-face.front .tcg-card {
+.theater-face.front .dino-card {
   height: 100%;
 }
 
@@ -1632,4 +1632,139 @@ button.danger {
   letter-spacing: 0.08em;
   padding: 0.28rem 0.55rem;
   transform: rotate(12deg);
+}
+
+/* ---------- DINO CARD (player layout) ---------- */
+.dino-card {
+  position: relative;
+  background: #f4f1ea;
+  border-radius: 22px;
+  padding: 0.45rem 0.45rem 0.55rem;
+  color: #111;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.28);
+}
+
+.dino-card.compact { padding: 0.32rem 0.32rem 0.4rem; border-radius: 16px; }
+
+.dino-card.rarity-gold { box-shadow: 0 0 0 2px #eab308, 0 8px 18px rgba(0,0,0,0.28); }
+.dino-card.rarity-emerald { box-shadow: 0 0 0 2px #22c55e, 0 8px 18px rgba(0,0,0,0.28); }
+.dino-card.rarity-sapphire { box-shadow: 0 0 0 2px #3b82f6, 0 8px 18px rgba(0,0,0,0.28); }
+.dino-card.rarity-ruby { box-shadow: 0 0 0 2px #ef4444, 0 8px 18px rgba(0,0,0,0.28); }
+.dino-card.rarity-diamond { box-shadow: 0 0 0 2px #67e8f9, 0 0 16px rgba(103,232,249,0.35); }
+.dino-card.rarity-rainbow { box-shadow: 0 0 0 2px #c084fc, 0 0 16px rgba(192,132,252,0.35); }
+
+.dino-chrome {
+  display: grid;
+  grid-template-columns: 34px 1fr 34px;
+  gap: 0.3rem;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
+.dino-card.compact .dino-chrome {
+  grid-template-columns: 26px 1fr 26px;
+  gap: 0.2rem;
+  margin-bottom: 0.25rem;
+}
+
+.dino-class,
+.dino-rank {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #111;
+  color: #f5f5f4;
+  display: grid;
+  place-items: center;
+}
+
+.dino-card.compact .dino-class,
+.dino-card.compact .dino-rank {
+  width: 26px;
+  height: 26px;
+}
+
+.dino-class { color: #e7e5e4; }
+.dino-card.diet-herbivore .dino-class { color: #86efac; }
+.dino-card.diet-carnivore .dino-class { color: #fda4af; }
+
+.dino-name {
+  background: #111;
+  color: #f5f5f4;
+  border-radius: 999px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  padding: 0.42rem 0.4rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dino-card.compact .dino-name {
+  font-size: 0.55rem;
+  padding: 0.32rem 0.25rem;
+  letter-spacing: 0.04em;
+}
+
+.dino-rank {
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.dino-art {
+  border-radius: 12px;
+  overflow: hidden;
+  background: #111;
+  aspect-ratio: 3 / 4;
+}
+
+.dino-art img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.dino-earn {
+  position: absolute;
+  left: 0.55rem;
+  bottom: 0.7rem;
+  background: #111;
+  color: #f5f5f4;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.78rem;
+  padding: 0.28rem 0.65rem;
+}
+
+.dino-card.compact .dino-earn {
+  left: 0.35rem;
+  bottom: 0.45rem;
+  font-size: 0.62rem;
+  padding: 0.18rem 0.45rem;
+}
+
+.dino-maxsold {
+  position: absolute;
+  right: -0.15rem;
+  top: 2.6rem;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #111;
+  color: #e7e5e4;
+  font-size: 0.48rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  text-align: center;
+  display: grid;
+  place-items: center;
+  line-height: 1.05;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.35);
+}
+
+.dino-card.unknown .dino-art {
+  filter: grayscale(1) brightness(0.45);
 }
