@@ -20,6 +20,8 @@ import {
   getAchievementsInfo,
   getPrestigeInfo,
   tryPrestige,
+  getShop,
+  tryBuyShopItem,
   getTableInfo,
   openTablePack,
   fileSortCard,
@@ -27,6 +29,7 @@ import {
 } from "./main.js";
 import { getCardEarnings, getCollectionSorted, getCardKey } from "./systems/collection.js";
 import { DINOSAURS, RARITIES } from "./data/dinosaurs.js";
+import { SHOP_CATEGORIES } from "./systems/shop.js";
 
 // Which dino page is open in the Collection Book (null = index)
 let openDinoId = null;
@@ -36,6 +39,7 @@ let openDinoId = null;
 // -----------------------------
 const moneyEl = document.getElementById("money");
 const incomeEl = document.getElementById("income");
+const ppEl = document.getElementById("pp-stat");
 const pageContent = document.getElementById("page-content");
 const tabButtons = document.querySelectorAll("[data-page]");
 
@@ -51,6 +55,54 @@ function formatRate(n) {
   if (v >= 1000000) return (v / 1000000).toFixed(1).replace(/\.0$/, "") + "m /s";
   if (v >= 1000) return (v / 1000).toFixed(1).replace(/\.0$/, "") + "k /s";
   return v + " /s";
+}
+
+/** Frame art is 784x1168. Slots are locked pixel centers from the approved sample. */
+const CARD_FRAME = { w: 784, h: 1168 };
+const CARD_FRAME_RARITIES = ["basic", "gold", "emerald", "sapphire", "ruby", "diamond", "rainbow"];
+const CARD_SLOTS = {
+  rank: { x: 128.9, y: 110.8 },
+  name: { x: 348.5, y: 93.6 },
+  earn: { x: 124.2, y: 1033.6 },
+};
+
+function frameSrc(rarity) {
+  const id = CARD_FRAME_RARITIES.includes(rarity) ? rarity : "basic";
+  return `assets/frames/frame-${id}.png`;
+}
+
+function formatCardRate(n) {
+  const v = Math.floor(n || 0);
+  if (v >= 1000000) return (v / 1000000).toFixed(1).replace(/\.0$/, "") + "m/s";
+  if (v >= 1000) return (v / 1000).toFixed(1).replace(/\.0$/, "") + "k/s";
+  return v + "/s";
+}
+
+function slotStyle(slot) {
+  const s = CARD_SLOTS[slot];
+  const left = ((s.x / CARD_FRAME.w) * 100).toFixed(3);
+  const top = ((s.y / CARD_FRAME.h) * 100).toFixed(3);
+  return `left:${left}%;top:${top}%`;
+}
+
+function cardTextOverlay({ name = "", rank = "", earn = null } = {}) {
+  const earnText = earn === null || earn === undefined ? "" : formatCardRate(earn);
+  return `
+    <span class="dino-rank" style="${slotStyle("rank")}">${rank}</span>
+    <span class="dino-name" style="${slotStyle("name")}">${name}</span>
+    ${earnText ? `<span class="dino-earn" style="${slotStyle("earn")}">${earnText}</span>` : ""}
+  `;
+}
+
+function tokenFigure(defOrId, color = "basic", extraClass = "") {
+  const id = typeof defOrId === "string" ? defOrId : (defOrId?.id || "explorer");
+  const name = typeof defOrId === "string" ? "" : (defOrId?.name || "Token");
+  const src = (typeof defOrId === "object" && defOrId?.image) || tokenImageFor(id);
+  return `
+    <div class="token-figure rarity-${color} ${extraClass}">
+      <img src="${src}" alt="${name}" />
+    </div>
+  `;
 }
 
 function dietLabel(diet) {
@@ -77,38 +129,29 @@ function renderDinoCard(dino, card = null, opts = {}) {
   const compact = !!opts.compact;
   const rarity = card?.rarity || opts.rarity || "basic";
   const rank = card?.rank || 0;
-  const earn = card ? getCardEarnings(card) : (dino.baseEarnings || 0);
+  const earn = card ? getCardEarnings(card, getPlayer()) : (dino.baseEarnings || 0);
   const maxed = rank >= 5;
   const name = (dino.short || dino.name || "Unknown").toUpperCase();
 
   if (unknown) {
     return `
       <article class="dino-card unknown ${compact ? "compact" : ""}">
-        <div class="dino-chrome">
-          <span class="dino-class"></span>
-          <span class="dino-name">???</span>
-          <span class="dino-rank">?</span>
-        </div>
         <div class="dino-window">
           <img class="dino-photo" src="assets/card-back.png" alt="" />
         </div>
-        <img class="dino-frame" src="assets/card-frame.jpg" alt="" />
+        <img class="dino-frame" src="${frameSrc("basic")}" alt="" />
+        ${cardTextOverlay({ name: "???", rank: "?" })}
       </article>
     `;
   }
 
   return `
     <article class="dino-card diet-${dino.diet} rarity-${rarity} ${compact ? "compact" : ""} ${maxed ? "maxed" : ""}">
-      <div class="dino-chrome">
-        <span class="dino-class" title="${dietLabel(dino.diet)}">${classIcon(dino.diet)}</span>
-        <span class="dino-name">${name}</span>
-        <span class="dino-rank">${card ? rank : "—"}</span>
-      </div>
       <div class="dino-window">
         <img class="dino-photo" src="assets/dinos/${dino.id}.jpg" alt="${dino.name}" onerror="this.style.visibility='hidden'" />
       </div>
-      <img class="dino-frame" src="assets/card-frame.jpg" alt="" />
-      <div class="dino-earn">${formatRate(earn)}</div>
+      <img class="dino-frame" src="${frameSrc(rarity)}" alt="" />
+      ${cardTextOverlay({ name, rank: card ? rank : "—", earn })}
       ${maxed ? `<span class="dino-maxsold">MAX Sold</span>` : ""}
     </article>
   `;
@@ -121,7 +164,7 @@ function rarityBanner(rarity) {
   return "COMMON";
 }
 
-function playPackTheater(cardList, onDone) {
+function playPackTheater(cardList, onDone, soldList = []) {
   const existing = document.getElementById("pack-theater");
   if (existing) existing.remove();
 
@@ -160,7 +203,10 @@ function playPackTheater(cardList, onDone) {
     const key = getCardKey(card.id, card.rarity);
     const owned = !!player.cards[key];
     const ownedRank = player.cards[key]?.rank || 0;
-    const isNew = !owned;
+    const soldHit = (soldList || []).find(s =>
+      s?.card && (s.card.uid === card.uid || (s.card.id === card.id && s.card.rarity === card.rarity))
+    );
+    const isNew = !owned && !soldHit;
     const isMax = ownedRank >= 4;
     const glow = ["emerald", "sapphire", "ruby", "diamond", "rainbow"].includes(card.rarity)
       ? `glow-${card.rarity}`
@@ -179,6 +225,7 @@ function playPackTheater(cardList, onDone) {
     const front = flip.querySelector(".theater-face.front");
     front.innerHTML = `
       ${isNew ? `<span class="new-burst">NEW</span>` : ""}
+      ${soldHit ? `<span class="new-burst">SOLD $${soldHit.value || 0}</span>` : ""}
       ${renderDinoCard(dino, card)}
     `;
     slot.className = "theater-card-slot " + glow;
@@ -186,8 +233,10 @@ function playPackTheater(cardList, onDone) {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => flip.classList.add("flipped"));
     });
-    banner.textContent = isNew ? `${rarityBanner(card.rarity)} · NEW` : rarityBanner(card.rarity);
-    banner.className = "theater-banner show " + (isNew ? "is-new" : isMax ? "is-max" : "is-dup");
+    banner.textContent = soldHit
+      ? `SOLD · $${soldHit.value || 0}`
+      : isNew ? `${rarityBanner(card.rarity)} · NEW` : rarityBanner(card.rarity);
+    banner.className = "theater-banner show " + (soldHit ? "is-max" : isNew ? "is-new" : isMax ? "is-max" : "is-dup");
     countEl.textContent = `${index + 1} / ${cardList.length}`;
     nextBtn.textContent = index < cardList.length - 1 ? "Next card" : "To the sort pile";
     nextBtn.disabled = false;
@@ -261,6 +310,7 @@ function updateHeader() {
   const p = getPlayer();
   moneyEl.textContent = formatMoney(p.money);
   incomeEl.textContent = formatMoney(p.incomePerSecond) + "/s";
+  if (ppEl) ppEl.textContent = (p.achievements?.prestigePoints || 0) + " PP";
 }
 
 // -----------------------------
@@ -305,6 +355,9 @@ function renderPage(page) {
       break;
     case "achievements":
       renderAchievements();
+      break;
+    case "shop":
+      renderShop();
       break;
     case "tokens":
       renderTokens();
@@ -376,7 +429,7 @@ function renderDenTable(p) {
             Auto sort (${preview.filed})
           </button>
         </div>
-        <p class="hint">Auto sort files duplicates only. First copies and the 5th print (rank max) stay on the table.</p>
+        <p class="hint">Auto sort files duplicates. First copies and the 5th stay here. Maxed extras sell for half earnings.</p>
         <div class="sort-grid">${sortHtml}</div>
       </div>
     </section>
@@ -393,7 +446,7 @@ function bindDenTable() {
     playPackTheater(result.cards || [], () => {
       updateHeader();
       renderHome();
-    });
+    }, result.sold || []);
   }
 
   const openBtn = document.getElementById("btn-open-table-pack");
@@ -453,7 +506,7 @@ function renderHome() {
             <span class="chip ${p.started ? "chip-live" : ""}">${p.started ? "Idle on" : "Idle off"}</span>
             <span class="chip">${discovered}/${speciesTotal} found</span>
             <span class="chip">Node ${pathNode}/20</span>
-            ${p.started ? `<span class="chip">${(p.table?.packs || []).length}/20 packs</span>` : ""}
+            ${p.started ? `<span class="chip">${(p.table?.packs || []).length}/${getTableInfo().packCap} packs</span>` : ""}
           </div>
         </div>
 
@@ -536,6 +589,12 @@ function renderHome() {
           <div class="room-desc">${achCount} unlocked</div>
         </button>
 
+        <button class="room-card tone-shop" data-goto="shop">
+          <div class="room-icon">✨</div>
+          <div class="room-label">Prestige Shop</div>
+          <div class="room-desc">${p.achievements?.prestigePoints || 0} PP to spend</div>
+        </button>
+
         <button class="room-card tone-token" data-goto="tokens">
           <div class="room-icon">♟️</div>
           <div class="room-label">Tokens</div>
@@ -594,22 +653,28 @@ function renderHome() {
     } else {
       panel.innerHTML = `
         <h3 class="section-title">Prestige</h3>
-        <p class="hint">Resets collection, path & shops. Keeps achievements, tokens & PP.</p>
+        <p class="hint">Resets collection, path & conveyor. Keeps achievements, tokens, shop upgrades & PP.</p>
         <div class="prestige-stats">
           <div>Prestiges: <strong>${info.prestigeCount}</strong></div>
           <div>Current PP: <strong>${info.currentPP}</strong></div>
           <div>From money: <strong>+${info.fromMoney} PP</strong></div>
           <div>Rate: <strong>$${info.rate.toLocaleString()}</strong> / PP</div>
         </div>
-        <button id="btn-prestige" class="primary">Prestige Now</button>
+        <div class="prestige-actions">
+          <button id="btn-open-shop" class="primary">Open Prestige Shop</button>
+          <button id="btn-prestige" class="primary">Prestige Now</button>
+        </div>
       `;
+      const shopBtn = document.getElementById("btn-open-shop");
+      if (shopBtn) shopBtn.addEventListener("click", () => navigate("shop"));
       const pb = document.getElementById("btn-prestige");
       if (pb) {
         pb.addEventListener("click", () => {
-          if (!confirm("Prestige? Main collection resets. Achievements, tokens, and Prestige Points are kept.")) return;
+          if (!confirm("Prestige? Main collection resets. Achievements, tokens, shop upgrades, and Prestige Points are kept.")) return;
           const r = tryPrestige();
           if (r.error) { alert(r.error); return; }
-          alert(`Prestiged! +${r.fromMoney} PP from money. Total PP: ${r.prestigePoints}. Prestige #${r.prestigeCount}`);
+          const kept = r.keptCard ? ` Kept ${r.keptCard.name} (${r.keptCard.rarity} r${r.keptCard.rank}).` : "";
+          alert(`Prestiged! +${r.fromMoney} PP from money. Total PP: ${r.prestigePoints}. Prestige #${r.prestigeCount}.${kept}`);
           openDinoId = null;
           navigate("home");
         });
@@ -735,7 +800,6 @@ function renderConveyor() {
       }
       updateHeader();
       renderConveyor();
-      navigate("home");
     });
   });
 }
@@ -899,7 +963,7 @@ function renderExpeditions() {
       const r = claimExpedition(btn.dataset.id);
       if (r.error) { alert(r.error); return; }
       updateHeader();
-      navigate("home");
+      renderExpeditions();
     });
   });
 }
@@ -946,9 +1010,77 @@ function renderAchievements() {
       <h2 class="page-title">Achievements</h2>
       <p class="page-sub">${info.unlockedCount}/${info.total} unlocked · ${info.prestigePoints} Prestige Points</p>
       <div class="ach-list">${rows}</div>
-      <p class="hint">Achievements stay through Prestige (when added). Full Reset still clears them.</p>
+      <p class="hint">Achievements and PP stay through Prestige. Spend PP in the Prestige Shop. Full Reset still clears them.</p>
+      <button id="btn-ach-shop" class="primary">Open Prestige Shop</button>
     </div>
   `;
+
+  const shopLink = document.getElementById("btn-ach-shop");
+  if (shopLink) shopLink.addEventListener("click", () => navigate("shop"));
+}
+
+// ----- PRESTIGE SHOP -----
+function renderShop() {
+  const info = getShop();
+  const sections = SHOP_CATEGORIES.map(cat => {
+    const items = info.items.filter(i => i.category === cat.id);
+    if (!items.length) return "";
+    const cards = items.map(item => {
+      const pips = Array.from({ length: item.maxLevel }, (_, i) =>
+        `<i class="${i < item.level ? "on" : ""}"></i>`
+      ).join("");
+      const costLabel = item.maxed ? "MAX" : `${item.cost} PP`;
+      const disabled = item.maxed || !item.canAfford ? "disabled" : "";
+      return `
+        <article class="shop-card ${item.maxed ? "maxed" : ""} ${item.canAfford && !item.maxed ? "affordable" : ""}">
+          <div class="shop-card-top">
+            <span class="shop-icon">${item.icon}</span>
+            <div>
+              <div class="shop-name">${item.name}</div>
+              <div class="shop-level">Lv ${item.level}/${item.maxLevel}</div>
+            </div>
+          </div>
+          <p class="shop-desc">${item.desc}</p>
+          <div class="shop-pips">${pips}</div>
+          <div class="shop-effect">${item.level ? item.effect : "Not purchased"}</div>
+          ${item.maxed ? "" : `<div class="shop-next">Next: ${item.nextEffect}</div>`}
+          ${item.nextRun ? `<div class="shop-tag">Applies on next start</div>` : ""}
+          <button class="primary shop-buy" data-item="${item.id}" ${disabled}>${costLabel}</button>
+        </article>
+      `;
+    }).join("");
+    return `
+      <section class="shop-section">
+        <h3 class="section-title">${cat.label}</h3>
+        <div class="shop-grid">${cards}</div>
+      </section>
+    `;
+  }).join("");
+
+  pageContent.innerHTML = `
+    <div class="page shop-page">
+      <h2 class="page-title">Prestige Shop</h2>
+      <p class="page-sub">${info.prestigePoints} PP banked · ${info.prestigeCount} prestige${info.prestigeCount === 1 ? "" : "s"}</p>
+      <div class="shop-bank">
+        <span>Spendable</span>
+        <strong>${info.prestigePoints} PP</strong>
+      </div>
+      ${sections}
+      <p class="hint">Upgrades persist through Prestige. Desk-drawer Reset wipes the shop too.</p>
+    </div>
+  `;
+
+  pageContent.querySelectorAll(".shop-buy").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const result = tryBuyShopItem(btn.dataset.item);
+      if (result.error) {
+        alert(result.error);
+        return;
+      }
+      updateHeader();
+      renderShop();
+    });
+  });
 }
 
 // ----- TOKENS -----

@@ -4,7 +4,8 @@ import {
   addCardsToCollection,
   getCollectionSorted,
   getDiscoveryPercent,
-  getCardKey
+  getCardKey,
+  recalculateIncome
 } from "./systems/collection.js";
 import { DINOSAURS } from "./data/dinosaurs.js";
 import { saveGame, loadGame, clearSave } from "./systems/save.js";
@@ -52,13 +53,24 @@ import {
   classifySortCard,
   autoSortPreview,
   MAX_TABLE_PACKS,
-  MAX_SORT_PILE
+  MAX_SORT_PILE,
+  packCap
 } from "./systems/table.js";
 import {
   initPrestigeState,
   getPrestigePreview,
   doPrestige
 } from "./systems/prestige.js";
+import {
+  initShopState,
+  buyShopItem,
+  getShopInfo,
+  getStartCash,
+  getExtraStarterPacks,
+  getPathStartIncome,
+  getPackLuck,
+  getPackDiscount
+} from "./systems/shop.js";
 
 let player = loadGame() || createPlayerState();
 
@@ -89,6 +101,10 @@ if (!player.prestige) {
 if (!player.table) {
   player.table = initTableState();
 }
+if (!player.shop) {
+  player.shop = initShopState();
+}
+recalculateIncome(player);
 syncTokens(player);
 syncAchievements(player);
 // One-time migration for very old saves that never tracked lifetime income
@@ -161,6 +177,32 @@ export function startCollecting() {
   if (!player.tokens) player.tokens = initTokensState();
   player.tokens.unlocked.explorer = true;
   player.tokens.equipped = "explorer";
+
+  const extraPacks = getExtraStarterPacks(player);
+  for (let i = 0; i < extraPacks; i++) {
+    deliverPack(player, {
+      name: "Starter Pack",
+      desc: "4 cards · kinder odds",
+      isStarter: true
+    });
+  }
+
+  const seed = getStartCash(player);
+  if (seed > 0) player.money += seed;
+
+  const pathStart = getPathStartIncome(player);
+  if (!player.path) {
+    player.path = {
+      currentNode: 0,
+      lifetimeIncome: 0,
+      claimedNodes: [0],
+      unlockedFlags: {}
+    };
+  }
+  if ((player.path.lifetimeIncome || 0) < pathStart) {
+    player.path.lifetimeIncome = pathStart;
+  }
+
   syncTokens(player);
   saveGame(player);
 
@@ -175,7 +217,7 @@ export function buyPack(cost = 100) {
     return { error: "Not enough money", needed: cost, have: player.money };
   }
   if (!canReceivePack(player)) {
-    return { error: "Table is full (20 packs)" };
+    return { error: `Table is full (${packCap(player)} packs)` };
   }
   player.money -= cost;
   const delivered = deliverPack(player, {
@@ -198,7 +240,7 @@ export function buyConveyorOffer(uid) {
   }
 
   if (!canReceivePack(player)) {
-    return { error: "Table is full (20 packs). Open some in the den first." };
+    return { error: `Table is full (${packCap(player)} packs). Open some in the den first.` };
   }
   player.money -= offer.price;
   const delivered = deliverPack(player, {
@@ -214,7 +256,7 @@ export function buyConveyorOffer(uid) {
 
 export function tickConveyor() {
   if (!player.conveyor) player.conveyor = initConveyorState();
-  const changed = refillConveyor(player.conveyor, player.packsOpened);
+  const changed = refillConveyor(player.conveyor, player.packsOpened, getPackDiscount(player));
   if (changed) saveGame(player);
   return player.conveyor;
 }
@@ -226,6 +268,8 @@ export function getConveyor() {
 
 export function getTableInfo() {
   const table = ensureTable(player);
+  const flushed = flushMaxedSortPile(player);
+  if (flushed.length) saveGame(player);
   return {
     packs: table.packs,
     sortPile: table.sortPile.map(card => ({
@@ -233,11 +277,27 @@ export function getTableInfo() {
       reason: classifySortCard(player, card)
     })),
     packCount: table.packs.length,
-    packCap: MAX_TABLE_PACKS,
+    packCap: packCap(player),
     sortCount: table.sortPile.length,
     sortCap: MAX_SORT_PILE,
     preview: autoSortPreview(player)
   };
+}
+
+function flushMaxedSortPile(state) {
+  const table = ensureTable(state);
+  const keep = [];
+  const sold = [];
+  for (const card of table.sortPile) {
+    if (classifySortCard(state, card) === "maxed") {
+      const results = addCardsToCollection(state, [card]);
+      sold.push(results[0]);
+    } else {
+      keep.push(card);
+    }
+  }
+  table.sortPile = keep;
+  return sold;
 }
 
 export function openTablePack() {
@@ -250,16 +310,27 @@ export function openTablePack() {
   const cards = openPack({
     isStarter: sealed.isStarter,
     filter: sealed.filter,
-    oddsBoost: sealed.oddsBoost
+    oddsBoost: sealed.oddsBoost,
+    luck: getPackLuck(player)
   }).map(card => ({
     ...card,
     uid: "card_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8)
   }));
-  table.sortPile.push(...cards);
+  const sold = [];
+  const kept = [];
+  for (const card of cards) {
+    if (classifySortCard(player, card) === "maxed") {
+      sold.push(addCardsToCollection(player, [card])[0]);
+    } else {
+      kept.push(card);
+    }
+  }
+  table.sortPile.push(...kept);
+  sold.push(...flushMaxedSortPile(player));
   player.packsOpened++;
   syncAchievements(player);
   saveGame(player);
-  return { opened: sealed, cards, player };
+  return { opened: sealed, cards, kept, sold, player };
 }
 
 export function fileSortCard(uid) {
@@ -268,19 +339,23 @@ export function fileSortCard(uid) {
   if (idx === -1) return { error: "Card not in the sort pile" };
   const [card] = table.sortPile.splice(idx, 1);
   const results = addCardsToCollection(player, [card]);
+  const extraSold = flushMaxedSortPile(player);
   syncAchievements(player);
   saveGame(player);
-  return { results, card, player };
+  return { results, extraSold, card, player };
 }
 
 export function autoSortTable() {
   const table = ensureTable(player);
   const keep = [];
   const filed = [];
+  const sold = [];
   for (const card of table.sortPile) {
-    if (classifySortCard(player, card) === "dup") {
+    const kind = classifySortCard(player, card);
+    if (kind === "dup" || kind === "maxed") {
       const results = addCardsToCollection(player, [card]);
-      filed.push({ card, results: results[0] });
+      if (results[0]?.type === "sold") sold.push({ card, results: results[0] });
+      else filed.push({ card, results: results[0] });
     } else {
       keep.push(card);
     }
@@ -290,6 +365,7 @@ export function autoSortTable() {
   saveGame(player);
   return {
     filed: filed.length,
+    sold: sold.length,
     kept: keep.length,
     preview: autoSortPreview(player),
     player
@@ -350,7 +426,7 @@ export function claimExpedition(expId) {
   if (!def) return { error: "Unknown expedition" };
 
   if (!canReceivePack(player)) {
-    return { error: "Table is full (20 packs). Open some in the den first." };
+    return { error: `Table is full (${packCap(player)} packs). Open some in the den first.` };
   }
   delete player.expeditions.completed[expId];
   const delivered = deliverPack(player, {
@@ -413,6 +489,21 @@ export function getPrestigeInfo() {
   return getPrestigePreview(player);
 }
 
+export function getShop() {
+  if (!player.shop) player.shop = initShopState();
+  return getShopInfo(player);
+}
+
+export function tryBuyShopItem(itemId) {
+  if (!player.shop) player.shop = initShopState();
+  const result = buyShopItem(player, itemId);
+  if (!result.error) {
+    if (itemId === "incomeMult") recalculateIncome(player);
+    saveGame(player);
+  }
+  return result;
+}
+
 export function tryPrestige() {
   if (!player.started) {
     return { error: "Start collecting before prestiging" };
@@ -450,6 +541,8 @@ export function resetGame() {
   player.tokens = initTokensState();
   player.achievements = initAchievementsState();
   player.table = initTableState();
+  player.shop = initShopState();
+  player.prestige = initPrestigeState();
   saveGame(player);
   return player;
 }
@@ -495,6 +588,8 @@ if (typeof window !== "undefined") {
     getAchievementsInfo,
     getPrestigeInfo,
     tryPrestige,
+    getShop,
+    tryBuyShopItem,
     getPlayer,
     setPage,
     resetGame,
