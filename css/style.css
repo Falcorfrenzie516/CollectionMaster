@@ -1520,7 +1520,14 @@ button.danger {
   width: min(70vw, 260px);
   height: min(58vh, 390px);
   z-index: 2;
+  perspective: 1200px;
 }
+
+.theater-card-slot.glow-emerald { box-shadow: 0 0 28px #22c55e; }
+.theater-card-slot.glow-sapphire { box-shadow: 0 0 28px #3b82f6; }
+.theater-card-slot.glow-ruby { box-shadow: 0 0 28px #ef4444; }
+.theater-card-slot.glow-diamond { box-shadow: 0 0 32px #67e8f9; }
+.theater-card-slot.glow-rainbow { box-shadow: 0 0 34px #c084fc; }
 
 .theater-pack {
   position: absolute;
@@ -1614,11 +1621,13 @@ button.danger {
   height: 100%;
 }
 
-.theater-flip.glow-emerald { filter: drop-shadow(0 0 18px #22c55e); }
-.theater-flip.glow-sapphire { filter: drop-shadow(0 0 18px #3b82f6); }
-.theater-flip.glow-ruby { filter: drop-shadow(0 0 18px #ef4444); }
-.theater-flip.glow-diamond { filter: drop-shadow(0 0 22px #67e8f9); }
-.theater-flip.glow-rainbow { filter: drop-shadow(0 0 24px #c084fc); }
+.theater-flip.glow-emerald,
+.theater-flip.glow-sapphire,
+.theater-flip.glow-ruby,
+.theater-flip.glow-diamond,
+.theater-flip.glow-rainbow {
+  filter: none;
+}
 
 .new-burst {
   position: absolute;
@@ -1634,54 +1643,89 @@ button.danger {
   transform: rotate(12deg);
 }
 
-/* ---------- DINO CARD (player layout) ---------- */
+/* ---------- DINO CARD (stone frame) ---------- */
 .dino-card {
   position: relative;
-  background: #f4f1ea;
-  border-radius: 22px;
-  padding: 0.45rem 0.45rem 0.55rem;
-  color: #111;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.28);
+  background: #070707;
+  border-radius: 10px;
+  overflow: hidden;
+  aspect-ratio: 2 / 3;
+  color: #f5f5f4;
+  box-shadow: 0 10px 22px rgba(0,0,0,0.45);
 }
 
-.dino-card.compact { padding: 0.32rem 0.32rem 0.4rem; border-radius: 16px; }
+.dino-card.compact { border-radius: 8px; }
 
-.dino-card.rarity-gold { box-shadow: 0 0 0 2px #eab308, 0 8px 18px rgba(0,0,0,0.28); }
-.dino-card.rarity-emerald { box-shadow: 0 0 0 2px #22c55e, 0 8px 18px rgba(0,0,0,0.28); }
-.dino-card.rarity-sapphire { box-shadow: 0 0 0 2px #3b82f6, 0 8px 18px rgba(0,0,0,0.28); }
-.dino-card.rarity-ruby { box-shadow: 0 0 0 2px #ef4444, 0 8px 18px rgba(0,0,0,0.28); }
-.dino-card.rarity-diamond { box-shadow: 0 0 0 2px #67e8f9, 0 0 16px rgba(103,232,249,0.35); }
-.dino-card.rarity-rainbow { box-shadow: 0 0 0 2px #c084fc, 0 0 16px rgba(192,132,252,0.35); }
+.dino-card.rarity-gold { box-shadow: 0 0 0 1px #eab308, 0 0 14px rgba(234,179,8,0.35); }
+.dino-card.rarity-emerald { box-shadow: 0 0 0 1px #22c55e, 0 0 14px rgba(34,197,94,0.4); }
+.dino-card.rarity-sapphire { box-shadow: 0 0 0 1px #3b82f6, 0 0 14px rgba(59,130,246,0.4); }
+.dino-card.rarity-ruby { box-shadow: 0 0 0 1px #ef4444, 0 0 14px rgba(239,68,68,0.4); }
+.dino-card.rarity-diamond { box-shadow: 0 0 0 1px #67e8f9, 0 0 18px rgba(103,232,249,0.45); }
+.dino-card.rarity-rainbow { box-shadow: 0 0 0 1px #c084fc, 0 0 18px rgba(192,132,252,0.45); }
+
+.dino-window {
+  position: absolute;
+  top: 14.5%;
+  left: 11%;
+  right: 11%;
+  bottom: 15.5%;
+  overflow: hidden;
+  background: #111;
+  z-index: 1;
+}
+
+.dino-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  display: block;
+}
+
+.dino-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+  z-index: 2;
+}
 
 .dino-chrome {
+  position: absolute;
+  left: 7%;
+  right: 7%;
+  top: 2.6%;
+  z-index: 3;
   display: grid;
-  grid-template-columns: 34px 1fr 34px;
-  gap: 0.3rem;
+  grid-template-columns: 28px 1fr 28px;
+  gap: 0.28rem;
   align-items: center;
-  margin-bottom: 0.35rem;
 }
 
 .dino-card.compact .dino-chrome {
-  grid-template-columns: 26px 1fr 26px;
-  gap: 0.2rem;
-  margin-bottom: 0.25rem;
+  grid-template-columns: 22px 1fr 22px;
+  gap: 0.16rem;
+  top: 2%;
 }
 
 .dino-class,
 .dino-rank {
-  width: 34px;
-  height: 34px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  background: #111;
+  background: rgba(8,8,8,0.92);
   color: #f5f5f4;
   display: grid;
   place-items: center;
+  border: 1px solid rgba(212,175,55,0.45);
 }
 
 .dino-card.compact .dino-class,
 .dino-card.compact .dino-rank {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
 }
 
 .dino-class { color: #e7e5e4; }
@@ -1689,17 +1733,18 @@ button.danger {
 .dino-card.diet-carnivore .dino-class { color: #fda4af; }
 
 .dino-name {
-  background: #111;
+  background: rgba(8,8,8,0.92);
   color: #f5f5f4;
   border-radius: 999px;
   text-align: center;
   font-weight: 800;
-  font-size: 0.72rem;
+  font-size: 0.62rem;
   letter-spacing: 0.08em;
-  padding: 0.42rem 0.4rem;
+  padding: 0.32rem 0.3rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  border: 1px solid rgba(212,175,55,0.45);
 }
 
 .dino-card.compact .dino-name {
@@ -1714,36 +1759,42 @@ button.danger {
 }
 
 .dino-art {
+  position: relative;
   border-radius: 12px;
   overflow: hidden;
-  background: #111;
+  background: #1c1917;
   aspect-ratio: 3 / 4;
 }
 
 .dino-art img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center 20%;
   display: block;
 }
 
 .dino-earn {
   position: absolute;
-  left: 0.55rem;
-  bottom: 0.7rem;
-  background: #111;
+  left: 12%;
+  bottom: 6.5%;
+  z-index: 3;
+  background: rgba(8,8,8,0.92);
   color: #f5f5f4;
   border-radius: 999px;
   font-weight: 800;
-  font-size: 0.78rem;
-  padding: 0.28rem 0.65rem;
+  font-size: 0.7rem;
+  padding: 0.22rem 0.55rem;
+  border: 1px solid rgba(212,175,55,0.45);
 }
 
 .dino-card.compact .dino-earn {
-  left: 0.35rem;
-  bottom: 0.45rem;
-  font-size: 0.62rem;
-  padding: 0.18rem 0.45rem;
+  left: 11%;
+  bottom: 5.5%;
+  font-size: 0.55rem;
+  padding: 0.14rem 0.38rem;
 }
 
 .dino-maxsold {
@@ -1765,6 +1816,11 @@ button.danger {
   box-shadow: 0 4px 10px rgba(0,0,0,0.35);
 }
 
-.dino-card.unknown .dino-art {
-  filter: grayscale(1) brightness(0.45);
+.dino-card.unknown .dino-photo {
+  filter: grayscale(1) brightness(0.35);
+}
+
+.theater-face.front .dino-card {
+  height: 100%;
+  aspect-ratio: auto;
 }
