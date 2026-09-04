@@ -105,53 +105,133 @@ function renderDinoCard(dino, card = null, opts = {}) {
   `;
 }
 
-function showPackReveal(cardList, results = [], onDone) {
-  const existing = document.getElementById("pack-reveal");
+function rarityBanner(rarity) {
+  if (rarity === "rainbow" || rarity === "diamond") return "FOIL CARD";
+  if (rarity === "ruby" || rarity === "sapphire" || rarity === "emerald") return "RARE CARD";
+  if (rarity === "gold") return "UNCOMMON";
+  return "COMMON";
+}
+
+function playPackTheater(cardList, onDone) {
+  const existing = document.getElementById("pack-theater");
   if (existing) existing.remove();
 
-  const resultByKey = {};
-  for (const r of results) {
-    if (r.card) resultByKey[getCardKey(r.card.id, r.card.rarity)] = r.type;
-  }
+  const player = getPlayer();
+  let index = 0;
+  let phase = "pack"; // pack -> flying -> face -> wait
 
   const overlay = document.createElement("div");
-  overlay.id = "pack-reveal";
-  overlay.className = "pack-reveal";
+  overlay.id = "pack-theater";
+  overlay.className = "pack-theater";
   overlay.innerHTML = `
-    <div class="pack-reveal-panel">
-      <div class="pack-reveal-kicker">Pack opened</div>
-      <h2>Dinosaur cards</h2>
-      <p class="hint">Tap a card to flip it.</p>
-      <div class="pack-reveal-grid">
-        ${cardList.map((card, i) => {
-          const dino = DINOSAURS.find(d => d.id === card.id) || card;
-          const tag = resultByKey[getCardKey(card.id, card.rarity)];
-          const tagLabel = tag === "new" ? "New" : tag === "rankup" ? "Rank up" : tag === "sold" ? "Sold" : "";
-          return `
-            <button class="flip-wrap" data-flip="${i}">
-              <div class="flip-inner">
-                <div class="flip-face flip-back">${renderDinoCard(dino, card, { unknown: true, compact: true })}</div>
-                <div class="flip-face flip-front">
-                  ${renderDinoCard(dino, card, { compact: true })}
-                  ${tagLabel ? `<span class="pull-tag pull-${tag}">${tagLabel}</span>` : ""}
-                </div>
-              </div>
-            </button>
-          `;
-        }).join("")}
+    <div class="theater-room">
+      <div class="theater-shelf" aria-hidden="true"></div>
+      <div class="theater-banner" id="theater-banner"></div>
+      <div class="theater-stage">
+        <div class="theater-card-slot" id="theater-card-slot"></div>
+        <img class="theater-pack" id="theater-pack" src="assets/dino-pack.png" alt="Dino pack" />
       </div>
-      <button id="btn-reveal-done" class="primary large">Add to binder</button>
+      <div class="theater-table"></div>
+      <div class="theater-hud">
+        <span id="theater-count">0 / ${cardList.length}</span>
+        <button id="theater-next" class="primary">Rip pack</button>
+      </div>
     </div>
   `;
   document.body.appendChild(overlay);
 
-  overlay.querySelectorAll("[data-flip]").forEach(btn => {
-    btn.addEventListener("click", () => btn.classList.add("flipped"));
+  const slot = overlay.querySelector("#theater-card-slot");
+  const packEl = overlay.querySelector("#theater-pack");
+  const banner = overlay.querySelector("#theater-banner");
+  const nextBtn = overlay.querySelector("#theater-next");
+  const countEl = overlay.querySelector("#theater-count");
+
+  function showFace(card) {
+    const dino = DINOSAURS.find(d => d.id === card.id) || card;
+    const key = getCardKey(card.id, card.rarity);
+    const owned = !!player.cards[key];
+    const ownedRank = player.cards[key]?.rank || 0;
+    const isNew = !owned;
+    const isMax = ownedRank >= 4;
+    const glow = ["emerald", "sapphire", "ruby", "diamond", "rainbow"].includes(card.rarity)
+      ? `glow-${card.rarity}`
+      : "";
+
+    slot.innerHTML = `
+      <div class="theater-flip flipped ${glow}">
+        <div class="theater-face back">
+          <img src="assets/card-back.png" alt="" />
+        </div>
+        <div class="theater-face front">
+          ${isNew ? `<span class="new-burst">NEW</span>` : ""}
+          ${renderDinoCard(dino, card)}
+        </div>
+      </div>
+    `;
+    banner.textContent = isNew ? `${rarityBanner(card.rarity)} · NEW` : rarityBanner(card.rarity);
+    banner.className = "theater-banner show " + (isNew ? "is-new" : isMax ? "is-max" : "is-dup");
+    countEl.textContent = `${index + 1} / ${cardList.length}`;
+    nextBtn.textContent = index < cardList.length - 1 ? "Next card" : "To the sort pile";
+    nextBtn.disabled = false;
+    phase = "wait";
+  }
+
+  function launchCard() {
+    if (index >= cardList.length) {
+      overlay.remove();
+      if (onDone) onDone();
+      return;
+    }
+    const card = cardList[index];
+    phase = "flying";
+    nextBtn.disabled = true;
+    banner.className = "theater-banner";
+    banner.textContent = "";
+    packEl.classList.add("burst");
+    slot.innerHTML = `
+      <div class="theater-flip flying">
+        <div class="theater-face back">
+          <img src="assets/card-back.png" alt="" />
+        </div>
+        <div class="theater-face front"></div>
+      </div>
+    `;
+    window.setTimeout(() => {
+      packEl.classList.remove("burst");
+      const flip = slot.querySelector(".theater-flip");
+      if (flip) flip.classList.remove("flying");
+      window.setTimeout(() => showFace(card), 280);
+    }, 520);
+  }
+
+  function ripPack() {
+    phase = "ripping";
+    packEl.classList.add("rip");
+    nextBtn.textContent = "…";
+    nextBtn.disabled = true;
+    window.setTimeout(() => {
+      packEl.classList.add("tucked");
+      launchCard();
+    }, 380);
+  }
+
+  nextBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (phase === "pack") ripPack();
+    else if (phase === "wait") {
+      index += 1;
+      if (index >= cardList.length) {
+        overlay.remove();
+        if (onDone) onDone();
+      } else {
+        launchCard();
+      }
+    }
   });
 
-  document.getElementById("btn-reveal-done").addEventListener("click", () => {
-    overlay.remove();
-    if (onDone) onDone();
+  overlay.addEventListener("click", () => {
+    if (phase === "pack") ripPack();
+    else if (phase === "wait") nextBtn.click();
   });
 }
 
@@ -221,10 +301,10 @@ function renderDenTable(p) {
   const preview = info.preview;
   const packsHtml = info.packs.length
     ? info.packs.map(pack => `
-        <div class="sealed-pack">
-          <div class="sealed-pack-face">${pack.isStarter ? "★" : "■"}</div>
+        <button class="sealed-pack" data-open-pack="1">
+          <img class="sealed-pack-art" src="assets/dino-pack.png" alt="" />
           <div class="sealed-pack-name">${pack.name}</div>
-        </div>
+        </button>
       `).join("")
     : `<p class="hint">No sealed packs. Buy from the conveyor or claim an expedition.</p>`;
 
@@ -266,7 +346,7 @@ function renderDenTable(p) {
       <div class="pack-pile">
         <div class="pile-row">${packsHtml}</div>
         <button id="btn-open-table-pack" class="primary large" ${info.packCount ? "" : "disabled"}>
-          Open 1 pack onto the sort pile
+          Open pack on the table
         </button>
       </div>
 
@@ -285,18 +365,23 @@ function renderDenTable(p) {
 }
 
 function bindDenTable() {
-  const openBtn = document.getElementById("btn-open-table-pack");
-  if (openBtn) {
-    openBtn.addEventListener("click", () => {
-      const result = openTablePack();
-      if (result.error) {
-        alert(result.error);
-        return;
-      }
+  function beginOpen() {
+    const result = openTablePack();
+    if (result.error) {
+      alert(result.error);
+      return;
+    }
+    playPackTheater(result.cards || [], () => {
       updateHeader();
       renderHome();
     });
   }
+
+  const openBtn = document.getElementById("btn-open-table-pack");
+  if (openBtn) openBtn.addEventListener("click", beginOpen);
+  pageContent.querySelectorAll("[data-open-pack]").forEach(btn => {
+    btn.addEventListener("click", beginOpen);
+  });
 
   const autoBtn = document.getElementById("btn-auto-sort");
   if (autoBtn) {
