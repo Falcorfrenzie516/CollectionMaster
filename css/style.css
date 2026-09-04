@@ -1932,6 +1932,33 @@ button.danger {
   display: block;
 }
 
+.dino-fx {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  z-index: 1;
+}
+
+.dino-card.rarity-basic .dino-fx { filter: saturate(0.35) brightness(0.85); }
+.dino-card.rarity-gold .dino-fx { filter: none; }
+.dino-card.rarity-emerald .dino-fx { filter: hue-rotate(85deg) saturate(1.35); }
+.dino-card.rarity-sapphire .dino-fx { filter: hue-rotate(175deg) saturate(1.4); }
+.dino-card.rarity-ruby .dino-fx { filter: hue-rotate(-20deg) saturate(1.45); }
+.dino-card.rarity-diamond .dino-fx { filter: hue-rotate(185deg) saturate(0.55) brightness(1.35); }
+.dino-card.rarity-rainbow .dino-fx {
+  filter: saturate(1.6) brightness(1.1);
+  animation: fx-rainbow 4s linear infinite;
+}
+@keyframes fx-rainbow {
+  0% { filter: hue-rotate(0deg) saturate(1.6) brightness(1.1); }
+  100% { filter: hue-rotate(360deg) saturate(1.6) brightness(1.1); }
+}
+
 .dino-frame {
   position: absolute;
   inset: 0;
