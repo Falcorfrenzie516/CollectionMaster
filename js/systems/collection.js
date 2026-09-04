@@ -5,6 +5,7 @@ import { initExpeditionsState } from "./expeditions.js";
 import { initTokensState } from "./tokens.js";
 import { initAchievementsState } from "./achievements.js";
 import { initPrestigeState } from "./prestige.js";
+import { initTableState } from "./table.js";
 
 export function createPlayerState() {
   return {
@@ -21,7 +22,8 @@ export function createPlayerState() {
     expeditions: initExpeditionsState(),
     tokens: initTokensState(),
     achievements: initAchievementsState(),
-    prestige: initPrestigeState()
+    prestige: initPrestigeState(),
+    table: initTableState()
   };
 }
 

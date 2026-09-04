@@ -90,6 +90,8 @@ export function doPrestige(player, helpers) {
   };
   if (helpers?.initConveyor) player.conveyor = helpers.initConveyor();
   if (helpers?.initExpeditions) player.expeditions = helpers.initExpeditions();
+  if (helpers?.initTable) player.table = helpers.initTable();
+  else player.table = { packs: [], sortPile: [] };
 
   // Restore persistent systems
   player.achievements = kept.achievements;
