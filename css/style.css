@@ -1385,8 +1385,20 @@ button.danger {
 }
 
 .sealed-pack {
-  width: 3.1rem;
+  width: 3.35rem;
   text-align: center;
+  background: none;
+  border: none;
+  color: inherit;
+  padding: 0;
+}
+
+.sealed-pack-art {
+  width: 3.35rem;
+  height: 4.6rem;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.35);
 }
 
 .sealed-pack-face {
@@ -1452,4 +1464,172 @@ button.danger {
   width: 100%;
   padding: 0.45rem 0.5rem;
   font-size: 0.75rem;
+}
+
+/* ---------- PACK THEATER ---------- */
+.pack-theater {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: #120e0a;
+}
+
+.theater-room {
+  height: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background-image:
+    linear-gradient(180deg, rgba(12,10,8,0.15) 0%, rgba(12,10,8,0.55) 70%),
+    url("../assets/room-bg.png");
+  background-size: cover;
+  background-position: center 20%;
+}
+
+.theater-shelf {
+  height: 18vh;
+}
+
+.theater-banner {
+  min-height: 1.8rem;
+  text-align: center;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.92rem;
+  opacity: 0;
+  color: #f8fafc;
+  text-shadow: 0 2px 10px #000;
+}
+
+.theater-banner.show { opacity: 1; }
+.theater-banner.is-new { color: #fde68a; }
+.theater-banner.is-dup { color: #e2e8f0; }
+.theater-banner.is-max { color: #fbbf24; }
+
+.theater-stage {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.theater-card-slot {
+  width: min(70vw, 260px);
+  height: min(58vh, 390px);
+  z-index: 2;
+}
+
+.theater-pack {
+  position: absolute;
+  bottom: 8%;
+  width: 132px;
+  z-index: 1;
+  filter: drop-shadow(0 12px 18px rgba(0,0,0,0.45));
+  transition: transform 0.35s ease, opacity 0.35s ease;
+}
+
+.theater-pack.rip {
+  animation: pack-shake 0.35s ease;
+}
+
+.theater-pack.burst {
+  transform: scale(1.06);
+}
+
+.theater-pack.tucked {
+  opacity: 0.35;
+  transform: translateY(18px) scale(0.86);
+}
+
+@keyframes pack-shake {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-7deg) scale(1.04); }
+  50% { transform: rotate(6deg); }
+  75% { transform: rotate(-4deg); }
+}
+
+.theater-table {
+  height: 11vh;
+  background: linear-gradient(180deg, transparent, rgba(40, 24, 12, 0.65));
+}
+
+.theater-hud {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 0.9rem 1.15rem;
+  background: rgba(8,6,4,0.72);
+}
+
+.theater-hud .primary {
+  flex: 1;
+}
+
+.theater-flip {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.45s ease;
+}
+
+.theater-flip.flying {
+  animation: card-fly 0.5s ease forwards;
+}
+
+.theater-flip.flipped {
+  transform: rotateY(180deg);
+}
+
+@keyframes card-fly {
+  0% { transform: translateY(46%) scale(0.45) rotate(-8deg); opacity: 0.3; }
+  100% { transform: translateY(0) scale(1) rotate(0); opacity: 1; }
+}
+
+.theater-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.theater-face.back img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.theater-face.front {
+  transform: rotateY(180deg);
+  background: transparent;
+}
+
+.theater-face.front .tcg-card {
+  height: 100%;
+}
+
+.theater-flip.glow-emerald { filter: drop-shadow(0 0 18px #22c55e); }
+.theater-flip.glow-sapphire { filter: drop-shadow(0 0 18px #3b82f6); }
+.theater-flip.glow-ruby { filter: drop-shadow(0 0 18px #ef4444); }
+.theater-flip.glow-diamond { filter: drop-shadow(0 0 22px #67e8f9); }
+.theater-flip.glow-rainbow { filter: drop-shadow(0 0 24px #c084fc); }
+
+.new-burst {
+  position: absolute;
+  top: 8px;
+  right: -6px;
+  z-index: 3;
+  background: #f59e0b;
+  color: #111;
+  font-weight: 800;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  padding: 0.28rem 0.55rem;
+  transform: rotate(12deg);
 }
