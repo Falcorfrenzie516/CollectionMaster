@@ -19,7 +19,11 @@ import {
   getTokensInfo,
   getAchievementsInfo,
   getPrestigeInfo,
-  tryPrestige
+  tryPrestige,
+  getTableInfo,
+  openTablePack,
+  fileSortCard,
+  autoSortTable
 } from "./main.js";
 import { getCardEarnings, getCollectionSorted, getCardKey } from "./systems/collection.js";
 import { DINOSAURS, RARITIES } from "./data/dinosaurs.js";
@@ -211,6 +215,111 @@ function renderPage(page) {
   }
 }
 
+function renderDenTable(p) {
+  if (!p.started) return "";
+  const info = getTableInfo();
+  const preview = info.preview;
+  const packsHtml = info.packs.length
+    ? info.packs.map(pack => `
+        <div class="sealed-pack">
+          <div class="sealed-pack-face">${pack.isStarter ? "★" : "■"}</div>
+          <div class="sealed-pack-name">${pack.name}</div>
+        </div>
+      `).join("")
+    : `<p class="hint">No sealed packs. Buy from the conveyor or claim an expedition.</p>`;
+
+  const sortHtml = info.sortPile.length
+    ? info.sortPile.map(card => {
+        const dino = DINOSAURS.find(d => d.id === card.id) || card;
+        const reason = card.reason === "first"
+          ? "First copy"
+          : card.reason === "fifth"
+            ? "5th · maxes rank"
+            : card.reason === "maxed"
+              ? "Already maxed"
+              : "Duplicate";
+        return `
+          <div class="sort-item">
+            ${renderDinoCard(dino, card, { compact: true })}
+            <div class="sort-meta">
+              <span class="sort-reason reason-${card.reason}">${reason}</span>
+              <button class="primary btn-file-card" data-uid="${card.uid}">File in binder</button>
+            </div>
+          </div>
+        `;
+      }).join("")
+    : `<p class="hint">Open a pack to fill the sort pile.</p>`;
+
+  return `
+    <section class="den-table">
+      <div class="den-table-head">
+        <div>
+          <div class="room-section-label">On the table</div>
+          <h3 class="den-table-title">Pack pile &amp; sort pile</h3>
+        </div>
+        <div class="den-table-counts">
+          <span>${info.packCount}/${info.packCap} packs</span>
+          <span>${info.sortCount}/${info.sortCap} to sort</span>
+        </div>
+      </div>
+
+      <div class="pack-pile">
+        <div class="pile-row">${packsHtml}</div>
+        <button id="btn-open-table-pack" class="primary large" ${info.packCount ? "" : "disabled"}>
+          Open 1 pack onto the sort pile
+        </button>
+      </div>
+
+      <div class="sort-pile">
+        <div class="sort-pile-head">
+          <div class="room-section-label">Sort pile</div>
+          <button id="btn-auto-sort" class="primary" ${preview.filed ? "" : "disabled"}>
+            Auto sort (${preview.filed})
+          </button>
+        </div>
+        <p class="hint">Auto sort files duplicates only. First copies and the 5th print (rank max) stay on the table.</p>
+        <div class="sort-grid">${sortHtml}</div>
+      </div>
+    </section>
+  `;
+}
+
+function bindDenTable() {
+  const openBtn = document.getElementById("btn-open-table-pack");
+  if (openBtn) {
+    openBtn.addEventListener("click", () => {
+      const result = openTablePack();
+      if (result.error) {
+        alert(result.error);
+        return;
+      }
+      updateHeader();
+      renderHome();
+    });
+  }
+
+  const autoBtn = document.getElementById("btn-auto-sort");
+  if (autoBtn) {
+    autoBtn.addEventListener("click", () => {
+      autoSortTable();
+      updateHeader();
+      renderHome();
+    });
+  }
+
+  pageContent.querySelectorAll(".btn-file-card").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const result = fileSortCard(btn.dataset.uid);
+      if (result.error) {
+        alert(result.error);
+        return;
+      }
+      updateHeader();
+      renderHome();
+    });
+  });
+}
+
 // ----- HOME -----
 function renderHome() {
   const p = getPlayer();
@@ -240,6 +349,7 @@ function renderHome() {
             <span class="chip ${p.started ? "chip-live" : ""}">${p.started ? "Idle on" : "Idle off"}</span>
             <span class="chip">${discovered}/${speciesTotal} found</span>
             <span class="chip">Node ${pathNode}/20</span>
+            ${p.started ? `<span class="chip">${(p.table?.packs || []).length}/20 packs</span>` : ""}
           </div>
         </div>
 
@@ -273,9 +383,9 @@ function renderHome() {
         <div class="start-area start-pack">
           <button id="btn-start" class="primary large start-pack-btn">
             <span class="pack-seal">★</span>
-            Rip the starter packs
+            Drop starter packs on the table
           </button>
-          <p class="hint">2 starter packs + Explorer token. Income begins immediately.</p>
+          <p class="hint">2 sealed packs + Explorer token. Open them on the table.</p>
         </div>
       ` : `
         <div class="income-ribbon">
@@ -283,6 +393,8 @@ function renderHome() {
           Collection earning ${formatMoney(p.incomePerSecond)}/sec
         </div>
       `}
+
+      ${renderDenTable(p)}
 
       <div class="room-section-label">Stations along the wall</div>
       <div class="room-grid stations">
@@ -351,10 +463,11 @@ function renderHome() {
         alert(result.error);
         return;
       }
-      const pulled = (result.packs || []).flat();
-      showPackReveal(pulled, result.results || [], () => navigate("collections"));
+      navigate("home");
     });
   }
+
+  bindDenTable();
 
   const resetBtn = document.getElementById("btn-reset");
   if (resetBtn) {
@@ -505,7 +618,7 @@ function renderConveyor() {
       <div class="conveyor-belt">
         ${offersHtml}
       </div>
-      <p class="hint">Standard, themed, gold & premium packs appear over time.</p>
+      <p class="hint">Bought packs move to the den table (max 20). Open them there.</p>
     </div>
   `;
 
@@ -517,7 +630,8 @@ function renderConveyor() {
         return;
       }
       updateHeader();
-      showPackReveal(result.cards || [], result.results || [], () => renderConveyor());
+      renderConveyor();
+      navigate("home");
     });
   });
 }
@@ -681,7 +795,7 @@ function renderExpeditions() {
       const r = claimExpedition(btn.dataset.id);
       if (r.error) { alert(r.error); return; }
       updateHeader();
-      showPackReveal(r.cards || [], r.results || [], () => renderExpeditions());
+      navigate("home");
     });
   });
 }

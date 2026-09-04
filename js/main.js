@@ -45,6 +45,16 @@ import {
   ACHIEVEMENTS
 } from "./systems/achievements.js";
 import {
+  initTableState,
+  ensureTable,
+  deliverPack,
+  canReceivePack,
+  classifySortCard,
+  autoSortPreview,
+  MAX_TABLE_PACKS,
+  MAX_SORT_PILE
+} from "./systems/table.js";
+import {
   initPrestigeState,
   getPrestigePreview,
   doPrestige
@@ -75,6 +85,9 @@ if (!player.achievements) {
 }
 if (!player.prestige) {
   player.prestige = initPrestigeState();
+}
+if (!player.table) {
+  player.table = initTableState();
 }
 syncTokens(player);
 syncAchievements(player);
@@ -131,13 +144,20 @@ function giveMissingCard(state, preferredRarity = "basic") {
 export function startCollecting() {
   if (player.started) return { error: "Already started" };
 
-  const pack1 = openPack({ isStarter: true });
-  const pack2 = openPack({ isStarter: true });
-  const results1 = addCardsToCollection(player, pack1);
-  const results2 = addCardsToCollection(player, pack2);
+  ensureTable(player);
+  const p1 = deliverPack(player, {
+    name: "Starter Pack",
+    desc: "4 cards · kinder odds",
+    isStarter: true
+  });
+  const p2 = deliverPack(player, {
+    name: "Starter Pack",
+    desc: "4 cards · kinder odds",
+    isStarter: true
+  });
+  if (p1.error || p2.error) return { error: p1.error || p2.error };
 
   player.started = true;
-  player.packsOpened += 2;
   if (!player.tokens) player.tokens = initTokensState();
   player.tokens.unlocked.explorer = true;
   player.tokens.equipped = "explorer";
@@ -145,8 +165,7 @@ export function startCollecting() {
   saveGame(player);
 
   return {
-    packs: [pack1, pack2],
-    results: [...results1, ...results2],
+    delivered: [p1.pack, p2.pack],
     player
   };
 }
@@ -155,12 +174,16 @@ export function buyPack(cost = 100) {
   if (player.money < cost) {
     return { error: "Not enough money", needed: cost, have: player.money };
   }
+  if (!canReceivePack(player)) {
+    return { error: "Table is full (20 packs)" };
+  }
   player.money -= cost;
-  const cards = openPack({});
-  const results = addCardsToCollection(player, cards);
-  player.packsOpened++;
+  const delivered = deliverPack(player, {
+    name: "Standard Pack",
+    desc: "4 cards · normal odds"
+  });
   saveGame(player);
-  return { cards, results, player };
+  return { delivered: delivered.pack, player };
 }
 
 /**
@@ -174,16 +197,19 @@ export function buyConveyorOffer(uid) {
     return { error: "Not enough money", needed: offer.price, have: player.money };
   }
 
+  if (!canReceivePack(player)) {
+    return { error: "Table is full (20 packs). Open some in the den first." };
+  }
   player.money -= offer.price;
-  const cards = openPack({
+  const delivered = deliverPack(player, {
+    name: offer.name,
+    desc: offer.desc,
     filter: offer.filter,
     oddsBoost: offer.oddsBoost
   });
-  const results = addCardsToCollection(player, cards);
-  player.packsOpened++;
   removeOffer(player.conveyor, uid);
   saveGame(player);
-  return { cards, results, offer, player };
+  return { delivered: delivered.pack, offer, player };
 }
 
 export function tickConveyor() {
@@ -196,6 +222,78 @@ export function tickConveyor() {
 export function getConveyor() {
   if (!player.conveyor) player.conveyor = initConveyorState();
   return player.conveyor;
+}
+
+export function getTableInfo() {
+  const table = ensureTable(player);
+  return {
+    packs: table.packs,
+    sortPile: table.sortPile.map(card => ({
+      ...card,
+      reason: classifySortCard(player, card)
+    })),
+    packCount: table.packs.length,
+    packCap: MAX_TABLE_PACKS,
+    sortCount: table.sortPile.length,
+    sortCap: MAX_SORT_PILE,
+    preview: autoSortPreview(player)
+  };
+}
+
+export function openTablePack() {
+  const table = ensureTable(player);
+  if (!table.packs.length) return { error: "No packs on the table" };
+  if (table.sortPile.length + 4 > MAX_SORT_PILE) {
+    return { error: "Sort pile is full. File some cards first." };
+  }
+  const sealed = table.packs.shift();
+  const cards = openPack({
+    isStarter: sealed.isStarter,
+    filter: sealed.filter,
+    oddsBoost: sealed.oddsBoost
+  }).map(card => ({
+    ...card,
+    uid: "card_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 8)
+  }));
+  table.sortPile.push(...cards);
+  player.packsOpened++;
+  syncAchievements(player);
+  saveGame(player);
+  return { opened: sealed, cards, player };
+}
+
+export function fileSortCard(uid) {
+  const table = ensureTable(player);
+  const idx = table.sortPile.findIndex(c => c.uid === uid);
+  if (idx === -1) return { error: "Card not in the sort pile" };
+  const [card] = table.sortPile.splice(idx, 1);
+  const results = addCardsToCollection(player, [card]);
+  syncAchievements(player);
+  saveGame(player);
+  return { results, card, player };
+}
+
+export function autoSortTable() {
+  const table = ensureTable(player);
+  const keep = [];
+  const filed = [];
+  for (const card of table.sortPile) {
+    if (classifySortCard(player, card) === "dup") {
+      const results = addCardsToCollection(player, [card]);
+      filed.push({ card, results: results[0] });
+    } else {
+      keep.push(card);
+    }
+  }
+  table.sortPile = keep;
+  syncAchievements(player);
+  saveGame(player);
+  return {
+    filed: filed.length,
+    kept: keep.length,
+    preview: autoSortPreview(player),
+    player
+  };
 }
 
 export function tickIncome() {
@@ -251,15 +349,18 @@ export function claimExpedition(expId) {
   const def = EXPEDITION_DEFS.find(e => e.id === expId);
   if (!def) return { error: "Unknown expedition" };
 
+  if (!canReceivePack(player)) {
+    return { error: "Table is full (20 packs). Open some in the den first." };
+  }
   delete player.expeditions.completed[expId];
-  const cards = openPack({
+  const delivered = deliverPack(player, {
+    name: def.name + " Pack",
+    desc: def.desc,
     filter: def.reward.filter,
     oddsBoost: def.reward.oddsBoost
   });
-  const results = addCardsToCollection(player, cards);
-  player.packsOpened++;
   saveGame(player);
-  return { cards, results, player };
+  return { delivered: delivered.pack, player };
 }
 
 export function tickAllExpeditions() {
@@ -318,7 +419,8 @@ export function tryPrestige() {
   }
   const result = doPrestige(player, {
     initConveyor: initConveyorState,
-    initExpeditions: initExpeditionsState
+    initExpeditions: initExpeditionsState,
+    initTable: initTableState
   });
   saveGame(player);
   return result;
@@ -347,6 +449,7 @@ export function resetGame() {
   player.expeditions = initExpeditionsState();
   player.tokens = initTokensState();
   player.achievements = initAchievementsState();
+  player.table = initTableState();
   saveGame(player);
   return player;
 }
@@ -373,6 +476,10 @@ if (typeof window !== "undefined") {
     startCollecting,
     buyPack,
     buyConveyorOffer,
+    getTableInfo,
+    openTablePack,
+    fileSortCard,
+    autoSortTable,
     tickConveyor,
     getConveyor,
     tickIncome,
