@@ -4,7 +4,8 @@
  * - Set tokens: unlock when you own all 7 rarities of a dinosaur
  * - Color variants: unlock when all 7 rarities are Rank 5
  * - Switch equipped token anytime among unlocked ones
- * - Persist through prestige (handled later)
+ * - Persist through prestige (kept by doPrestige)
+ * - Art: assets/tokens/{id}.jpg pewter Monopoly-style pieces
  */
 
 import { DINOSAURS, RARITIES } from "../data/dinosaurs.js";
@@ -16,17 +17,25 @@ function getCardKey(id, rarity) {
 export const STARTER_TOKEN = {
   id: "explorer",
   name: "The Explorer",
-  desc: "Little explorer with a backpack",
+  desc: "Hooded scout with pack and staff. Always owned.",
   icon: "🎒",
+  image: "assets/tokens/explorer.jpg",
   type: "starter"
 };
+
+export function tokenImageFor(tokenId) {
+  if (!tokenId || tokenId === "explorer") return "assets/tokens/explorer.jpg";
+  if (tokenId.startsWith("set_")) return `assets/tokens/${tokenId.slice(4)}.jpg`;
+  return `assets/tokens/${tokenId}.jpg`;
+}
 
 export function getSetTokenDef(dino) {
   return {
     id: `set_${dino.id}`,
     name: `${dino.name} Token`,
-    desc: `Complete all rarities of ${dino.name}`,
+    desc: `Complete all 7 rarities of ${dino.name}`,
     icon: "♟️",
+    image: `assets/tokens/${dino.id}.jpg`,
     type: "set",
     dinoId: dino.id
   };

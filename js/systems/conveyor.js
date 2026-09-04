@@ -63,10 +63,11 @@ export const MAX_OFFERS = 4;
  * Price scales with packs opened so $100 doesn't stay free forever.
  * price = base * (1 + packsOpened * 0.08), floored, min base
  */
-export function getPackPrice(packType, packsOpened) {
+export function getPackPrice(packType, packsOpened, discount = 0) {
   const base = packType.basePrice;
   const scale = 1 + Math.floor(packsOpened / 5) * 0.15;
-  return Math.floor(base * scale);
+  const cut = Math.max(0, Math.min(0.5, discount || 0));
+  return Math.max(1, Math.floor(base * scale * (1 - cut)));
 }
 
 /**
@@ -92,14 +93,14 @@ function pickPackType(packsOpened) {
   return PACK_TYPES.standard;
 }
 
-export function createOffer(packsOpened) {
+export function createOffer(packsOpened, discount = 0) {
   const type = pickPackType(packsOpened);
   return {
     uid: Date.now() + Math.random().toString(36).slice(2, 7),
     packId: type.id,
     name: type.name,
     desc: type.desc,
-    price: getPackPrice(type, packsOpened),
+    price: getPackPrice(type, packsOpened, discount),
     filter: type.filter || null,
     oddsBoost: type.oddsBoost || null
   };
@@ -115,12 +116,12 @@ export function initConveyorState() {
 /**
  * Ensure conveyor has up to MAX_OFFERS. Call periodically.
  */
-export function refillConveyor(conveyor, packsOpened) {
+export function refillConveyor(conveyor, packsOpened, discount = 0) {
   const now = Date.now();
 
   if (conveyor.offers.length === 0) {
     while (conveyor.offers.length < MAX_OFFERS) {
-      conveyor.offers.push(createOffer(packsOpened));
+      conveyor.offers.push(createOffer(packsOpened, discount));
     }
     conveyor.lastRefillAt = now;
     return true;
@@ -129,7 +130,7 @@ export function refillConveyor(conveyor, packsOpened) {
   if (conveyor.offers.length >= MAX_OFFERS) return false;
   if (now - conveyor.lastRefillAt < REFILL_MS) return false;
 
-  conveyor.offers.push(createOffer(packsOpened));
+  conveyor.offers.push(createOffer(packsOpened, discount));
   conveyor.lastRefillAt = now;
   return true;
 }

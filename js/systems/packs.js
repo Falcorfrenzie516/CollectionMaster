@@ -20,6 +20,23 @@ const PREMIUM_ODDS = {
   ruby: 0.07, diamond: 0.04, rainbow: 0.02
 };
 
+/**
+ * Shift a slice of basic probability into higher rarities.
+ * luck 1 = 3% tilt, luck 5 = 15% tilt.
+ */
+function applyLuck(odds, luck) {
+  if (!luck) return odds;
+  const next = { ...odds };
+  const take = Math.min(next.basic * 0.55, 0.03 * luck);
+  next.basic -= take;
+  const higher = ["gold", "emerald", "sapphire", "ruby", "diamond", "rainbow"];
+  const weights = [0.40, 0.25, 0.15, 0.10, 0.06, 0.04];
+  higher.forEach((rarity, i) => {
+    next[rarity] = (next[rarity] || 0) + take * weights[i];
+  });
+  return next;
+}
+
 function weightedRandom(odds) {
   const roll = Math.random();
   let cumulative = 0;
@@ -59,6 +76,7 @@ export function openPack(options = {}) {
   if (isStarter) odds = STARTER_ODDS;
   else if (oddsBoost === "gold") odds = GOLD_ODDS;
   else if (oddsBoost === "premium") odds = PREMIUM_ODDS;
+  odds = applyLuck(odds, options.luck || 0);
 
   const pool = getPool(filter);
   const cards = [];

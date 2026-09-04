@@ -92,9 +92,12 @@ export function startExpedition(player, expId) {
   }
 
   const now = Date.now();
+  const timeMult = typeof player.shop === "object"
+    ? Math.max(0.4, 1 - ((player.shop.levels?.expeditionSpeed || 0) * 0.12))
+    : 1;
   player.expeditions.active[expId] = {
     startedAt: now,
-    endsAt: now + def.durationSec * 1000
+    endsAt: now + Math.max(8, Math.floor(def.durationSec * timeMult)) * 1000
   };
   delete player.expeditions.completed[expId];
   return { ok: true, endsAt: player.expeditions.active[expId].endsAt };

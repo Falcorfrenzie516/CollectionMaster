@@ -3,7 +3,7 @@
  *
  * Manual button — player chooses when to prestige.
  * Resets: money, cards, income, path progress, conveyor, expeditions progress
- * Keeps: achievements, prestige points, tokens, (future: event books)
+ * Keeps: achievements, prestige points, tokens, shop purchases, (future: event books)
  *
  * Prestige Points (PP) sources:
  * 1. Achievements (already granted on unlock, 5–10 each)
@@ -12,6 +12,9 @@
  *    conversionRate starts at 10_000 and increases with total PP earned
  *    so later prestiges convert money less efficiently
  */
+
+import { DINOSAURS, RARITY_MULTIPLIER, RANK_MULTIPLIER } from "../data/dinosaurs.js";
+import { canKeepBest, getIncomeMultiplier, getPathStartIncome } from "./shop.js";
 
 export function initPrestigeState() {
   return {
@@ -53,9 +56,31 @@ export function getPrestigePreview(player) {
  * Execute prestige.
  * Returns summary of what was kept / gained.
  */
+function cardPower(card) {
+  const dino = DINOSAURS.find(d => d.id === card.id);
+  if (!dino) return 0;
+  return dino.baseEarnings
+    * (RARITY_MULTIPLIER[card.rarity] || 1)
+    * (RANK_MULTIPLIER[card.rank] || 1);
+}
+
 export function doPrestige(player, helpers) {
   const preview = getPrestigePreview(player);
   const fromMoney = preview.fromMoney;
+
+  let keepCard = null;
+  if (canKeepBest(player)) {
+    let best = null;
+    let bestPower = -1;
+    for (const card of Object.values(player.cards || {})) {
+      const power = cardPower(card);
+      if (power > bestPower) {
+        bestPower = power;
+        best = { ...card };
+      }
+    }
+    keepCard = best;
+  }
 
   // Award money conversion PP
   if (!player.achievements) {
@@ -71,7 +96,8 @@ export function doPrestige(player, helpers) {
   const kept = {
     achievements: player.achievements,
     tokens: player.tokens,
-    prestige: player.prestige
+    prestige: player.prestige,
+    shop: player.shop
   };
 
   // Reset main run state
@@ -97,11 +123,26 @@ export function doPrestige(player, helpers) {
   player.achievements = kept.achievements;
   player.tokens = kept.tokens;
   player.prestige = kept.prestige;
+  player.shop = kept.shop;
+
+  const pathStart = getPathStartIncome(player);
+  if (pathStart > 0) {
+    player.path.lifetimeIncome = pathStart;
+  }
+
+  if (keepCard) {
+    const key = `${keepCard.id}_${keepCard.rarity}`;
+    player.cards[key] = keepCard;
+    player.discovered[keepCard.id] = true;
+    player.totalDiscovered = 1;
+    player.incomePerSecond = Math.floor(cardPower(keepCard) * getIncomeMultiplier(player));
+  }
 
   return {
     ok: true,
     fromMoney,
     prestigeCount: player.prestige.prestigeCount,
-    prestigePoints: player.achievements.prestigePoints
+    prestigePoints: player.achievements.prestigePoints,
+    keptCard: keepCard
   };
 }

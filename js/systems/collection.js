@@ -6,6 +6,7 @@ import { initTokensState } from "./tokens.js";
 import { initAchievementsState } from "./achievements.js";
 import { initPrestigeState } from "./prestige.js";
 import { initTableState } from "./table.js";
+import { initShopState, getIncomeMultiplier } from "./shop.js";
 
 export function createPlayerState() {
   return {
@@ -23,7 +24,8 @@ export function createPlayerState() {
     tokens: initTokensState(),
     achievements: initAchievementsState(),
     prestige: initPrestigeState(),
-    table: initTableState()
+    table: initTableState(),
+    shop: initShopState()
   };
 }
 
@@ -31,18 +33,20 @@ export function getCardKey(id, rarity) {
   return `${id}_${rarity}`;
 }
 
-export function getCardEarnings(card) {
+export function getCardEarnings(card, state = null) {
   const dino = DINOSAURS.find(d => d.id === card.id);
   if (!dino) return 0;
   const rarityMult = RARITY_MULTIPLIER[card.rarity] || 1;
   const rankMult = RANK_MULTIPLIER[card.rank] || 1;
-  return Math.floor(dino.baseEarnings * rarityMult * rankMult);
+  let amount = Math.floor(dino.baseEarnings * rarityMult * rankMult);
+  if (state) amount = Math.floor(amount * getIncomeMultiplier(state));
+  return amount;
 }
 
 export function recalculateIncome(state) {
   let total = 0;
   for (const card of Object.values(state.cards)) {
-    total += getCardEarnings(card);
+    total += getCardEarnings(card, state);
   }
   state.incomePerSecond = total;
 }
@@ -64,7 +68,7 @@ export function addCardsToCollection(state, newCards) {
       existing.rank++;
       results.push({ type: "rankup", card: existing });
     } else {
-      const sellValue = Math.floor(getCardEarnings(existing) * 0.5);
+      const sellValue = Math.floor(getCardEarnings(existing, state) * 0.5);
       state.money += sellValue;
       results.push({ type: "sold", card: existing, value: sellValue });
     }

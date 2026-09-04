@@ -1,5 +1,11 @@
+import { getTablePackCap } from "./shop.js";
+
 export const MAX_TABLE_PACKS = 20;
 export const MAX_SORT_PILE = 80;
+
+export function packCap(state) {
+  return getTablePackCap(state);
+}
 
 export function initTableState() {
   return {
@@ -23,20 +29,21 @@ export function tableCounts(state) {
   const table = ensureTable(state);
   return {
     packs: table.packs.length,
-    packCap: MAX_TABLE_PACKS,
+    packCap: packCap(state),
     sort: table.sortPile.length,
     sortCap: MAX_SORT_PILE
   };
 }
 
 export function canReceivePack(state) {
-  return ensureTable(state).packs.length < MAX_TABLE_PACKS;
+  return ensureTable(state).packs.length < packCap(state);
 }
 
 export function deliverPack(state, spec = {}) {
   const table = ensureTable(state);
-  if (table.packs.length >= MAX_TABLE_PACKS) {
-    return { error: "Table is full (20 packs)" };
+  const cap = packCap(state);
+  if (table.packs.length >= cap) {
+    return { error: `Table is full (${cap} packs)` };
   }
   const pack = {
     uid: uid("pack"),
