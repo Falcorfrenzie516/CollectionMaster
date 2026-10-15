@@ -314,6 +314,23 @@ body {
   height: 2.2rem;
 }
 
+.table-map-preview {
+  width: 2.7rem;
+  height: 3.5rem;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(232, 194, 122, 0.5);
+  box-shadow: inset 0 0 0 1px rgba(0,0,0,0.35);
+}
+
+.table-map-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 28%;
+  display: block;
+}
+
 .feature-text {
   flex: 1;
   min-width: 0;
@@ -726,54 +743,204 @@ button.danger {
 }
 
 /* ---------- PATH ---------- */
+#page-content.is-path {
+  padding: 0.7rem 0.7rem 1.6rem;
+}
+
 .path-claim-bar {
-  margin-bottom: 1rem;
+  margin-bottom: 0.7rem;
 }
 
-.path-list {
+.path-map {
+  position: relative;
+  width: 100%;
+  aspect-ratio: var(--map-aspect, 0.769);
+  border-radius: 14px;
+  overflow: hidden;
+  isolation: isolate;
+  background: #1a2330;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.06), 0 10px 28px rgba(0,0,0,0.35);
+}
+
+.path-map-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  pointer-events: none;
+}
+
+.path-map-trail {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.path-map-trail path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.path-map-trail .trail-full {
+  stroke: var(--trail, #1b8a3a);
+  stroke-width: 0.62;
+  stroke-dasharray: 1.2 0.95;
+  opacity: 0.92;
+  filter: drop-shadow(0 0 0.35px rgba(0,0,0,0.55));
+}
+
+.path-map-trail .trail-walked {
+  stroke: #f5e6b8;
+  stroke-width: 0.7;
+  stroke-dasharray: 0 100;
+  stroke-dashoffset: 0;
+  opacity: 0.9;
+  filter: drop-shadow(0 0 0.4px rgba(0,0,0,0.4));
+}
+
+.map-node {
+  position: absolute;
+  z-index: 2;
+  width: 7.2%;
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.map-node-core {
   display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.path-node {
-  display: grid;
-  grid-template-columns: 2rem 1.5rem 1fr;
-  gap: 0.5rem;
   align-items: center;
-  padding: 0.55rem 0.7rem;
-  border-radius: 10px;
-  background: var(--surface);
-  font-size: 0.85rem;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #2b3034;
+  color: #d7ddd8;
+  font-size: 0.62rem;
+  font-weight: 700;
+  box-shadow: 0 0 0 1.6px var(--node-ring, #1f9d4a), 0 1px 3px rgba(0,0,0,0.45);
 }
 
-.path-node.claimed {
-  opacity: 0.55;
-  border-left: 3px solid #64748b;
+.map-node.claimed .map-node-core {
+  background: #3d6b45;
+  color: #f3f7ef;
 }
 
-.path-node.claimable {
-  border-left: 3px solid var(--accent);
+.map-node.claimable .map-node-core {
   background: #1e3a5f;
+  box-shadow: 0 0 0 2px #f5e6b8, 0 0 0 3.5px var(--node-ring, #1f9d4a);
+  animation: nodePulse 1.4s ease-in-out infinite;
 }
 
-.path-node.unlocked {
+.map-node.unlocked .map-node-core {
+  background: #3a4554;
+}
+
+.map-node.locked {
+  opacity: 0.55;
+}
+
+.map-node.locked .map-node-core {
+  background: #2b3034;
+  color: #9aa39c;
+}
+
+.map-node.selected .map-node-core {
+  transform: scale(1.08);
+}
+
+.map-node.here {
+  z-index: 4;
+}
+
+@keyframes nodePulse {
+  0%, 100% { box-shadow: 0 0 0 2px #f5e6b8, 0 0 0 3.5px var(--node-ring, #1f9d4a); }
+  50% { box-shadow: 0 0 0 2px #fff7d6, 0 0 0 5px rgba(31,157,74,0.55); }
+}
+
+.map-token {
+  position: absolute;
+  z-index: 5;
+  width: 9.4%;
+  aspect-ratio: 4 / 5;
+  transform: translate(-50%, -78%);
+  pointer-events: none;
+  filter: drop-shadow(0 3px 4px rgba(0,0,0,0.55));
+}
+
+.map-token img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.path-focus {
+  margin-top: 0.7rem;
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 0.75rem 0.85rem;
   border-left: 3px solid #475569;
 }
 
-.path-node.locked {
-  opacity: 0.35;
-}
+.path-focus.claimable { border-left-color: var(--accent); }
+.path-focus.claimed { border-left-color: #64748b; }
+.path-focus.locked { opacity: 0.72; }
 
-.node-num {
-  font-weight: 700;
+.path-focus-kicker {
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--muted);
-  font-size: 0.75rem;
+  margin-bottom: 0.15rem;
 }
 
-.node-icon {
-  text-align: center;
-  font-size: 0.9rem;
+.path-focus-title {
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.path-focus-meta {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-top: 0.15rem;
+}
+
+.path-focus .primary {
+  margin-top: 0.55rem;
+  width: 100%;
+}
+
+.path-progress-row {
+  margin-top: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.path-progress {
+  height: 6px;
+  border-radius: 99px;
+  background: var(--surface2);
+  overflow: hidden;
+}
+
+.path-progress i {
+  display: block;
+  height: 100%;
+  background: var(--success);
+  border-radius: 99px;
 }
 
 .node-label {

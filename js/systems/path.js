@@ -1,6 +1,9 @@
 /**
  * Path system — 20 nodes unlocked by lifetime income earned.
  * Player claims one node at a time by sliding the token.
+ *
+ * Visual layout (shared by every collection) lives in js/data/path-map.js.
+ * Node spots never move; only the map background theme changes.
  */
 
 // Target lifetime income to unlock each node (node 1 is free / start)

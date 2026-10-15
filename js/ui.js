@@ -30,9 +30,21 @@ import {
 import { getCardEarnings, getCollectionSorted, getCardKey } from "./systems/collection.js";
 import { DINOSAURS, RARITIES } from "./data/dinosaurs.js";
 import { SHOP_CATEGORIES } from "./systems/shop.js";
+import {
+  MAP_ASPECT,
+  MAP_NODE_COUNT,
+  NODE_POSITIONS,
+  PATH_TRAIL_D,
+  DEFAULT_COLLECTION_ID,
+  getMapTheme,
+  mapAssetSrc,
+  nodeStyle
+} from "./data/path-map.js";
 
 // Which dino page is open in the Collection Book (null = index)
 let openDinoId = null;
+// Which path node is focused on the main map (null = auto: claimable or current)
+let selectedPathNode = null;
 
 // -----------------------------
 // DOM refs
@@ -340,6 +352,7 @@ tabButtons.forEach(btn => {
 // -----------------------------
 function renderPage(page) {
   pageContent.classList.toggle("is-home", page === "home");
+  pageContent.classList.toggle("is-path", page === "path");
   switch (page) {
     case "home":
       renderHome();
@@ -497,6 +510,8 @@ function renderHome() {
   const equippedRaw = p.tokens?.equipped || "explorer";
   const equipped = equippedRaw.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
   const incomeLive = p.started && p.incomePerSecond > 0;
+  const mapTheme = getMapTheme(DEFAULT_COLLECTION_ID);
+  const mapSrc = mapAssetSrc(mapTheme);
 
   pageContent.innerHTML = `
     <div class="home-room">
@@ -522,17 +537,12 @@ function renderHome() {
             <span class="table-node">Node ${pathNode}</span>
           </div>
           <div class="table-hotspot-body">
-            <div class="table-mark" aria-hidden="true">
-              <svg viewBox="0 0 64 40" width="56" height="34">
-                <path d="M6 28c8-12 16-18 26-18s18 6 26 18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-                <circle cx="32" cy="12" r="4.2" fill="currentColor"/>
-                <circle cx="14" cy="26" r="2.4" fill="currentColor" opacity=".7"/>
-                <circle cx="50" cy="26" r="2.4" fill="currentColor" opacity=".7"/>
-              </svg>
+            <div class="table-mark table-map-preview" aria-hidden="true">
+              <img src="${mapSrc}" alt="" />
             </div>
             <div class="feature-text">
               <div class="room-label">Path Table</div>
-              <div class="room-desc">Unrolled map · ${equipped} token ready to slide</div>
+              <div class="room-desc">Unrolled ${mapTheme.name} · ${equipped} token ready to slide</div>
             </div>
             <div class="feature-arrow">›</div>
           </div>
@@ -811,81 +821,139 @@ function renderConveyor() {
 }
 
 // ----- PATH -----
+function nodeStatus(info, i) {
+  const claimed = info.claimedNodes.includes(i);
+  const isNext = info.nextClaimable === i;
+  const isUnlocked = i < info.unlockedCount;
+  if (claimed) return "claimed";
+  if (isNext) return "claimable";
+  if (isUnlocked) return "unlocked";
+  return "locked";
+}
+
+function pathRewardLine(reward, target) {
+  if (target === 0) return "Start of the trail";
+  return "Needs $" + target.toLocaleString() + " lifetime";
+}
+
+function claimCurrentPathNode() {
+  const result = claimPathNode();
+  if (result.error) {
+    alert(result.error);
+    return;
+  }
+  selectedPathNode = result.node - 1;
+  updateHeader();
+  renderPath();
+}
+
 function renderPath() {
-  const p = getPlayer();
   const info = getPathInfo();
   const next = info.nextClaimable;
   const unlocked = info.unlockedCount;
+  const theme = getMapTheme(DEFAULT_COLLECTION_ID);
+  const mapSrc = mapAssetSrc(theme);
+  const tokens = getTokensInfo();
+  const equipped = tokens.current;
+  const tokenPos = NODE_POSITIONS[info.currentNode] || NODE_POSITIONS[0];
+
+  if (selectedPathNode === null || selectedPathNode < 0 || selectedPathNode >= MAP_NODE_COUNT) {
+    selectedPathNode = next !== null ? next : info.currentNode;
+  }
+
+  const focus = selectedPathNode;
+  const focusReward = info.rewards[focus];
+  const focusTarget = info.targets[focus];
+  const focusStatus = nodeStatus(info, focus);
 
   let nodesHtml = "";
-  for (let i = 0; i < 20; i++) {
-    const claimed = info.claimedNodes.includes(i);
-    const isNext = next === i;
-    const isUnlocked = i < unlocked;
-    const reward = info.rewards[i];
-    const target = info.targets[i];
-
-    let statusClass = "locked";
-    if (claimed) statusClass = "claimed";
-    else if (isNext) statusClass = "claimable";
-    else if (isUnlocked) statusClass = "unlocked";
-
-    const icon = claimed ? "●" : isNext ? "◇" : isUnlocked ? "○" : "·";
-
+  for (let i = 0; i < MAP_NODE_COUNT; i++) {
+    const status = nodeStatus(info, i);
+    const here = i === info.currentNode;
     nodesHtml += `
-      <div class="path-node ${statusClass}" data-node="${i}">
-        <div class="node-num">${i + 1}</div>
-        <div class="node-icon">${icon}</div>
-        <div class="node-info">
-          <div class="node-label">${reward.label}</div>
-          <div class="node-meta">${target === 0 ? "Start" : "Needs $" + target.toLocaleString() + " lifetime"}</div>
-        </div>
-      </div>
+      <button
+        type="button"
+        class="map-node ${status}${i === focus ? " selected" : ""}${here ? " here" : ""}"
+        data-node="${i}"
+        style="${nodeStyle(i)}"
+        aria-label="Node ${i + 1} ${info.rewards[i].label}"
+      >
+        <span class="map-node-core">${i + 1}</span>
+      </button>
     `;
   }
 
   const canClaim = next !== null;
   const nextLabel = canClaim
     ? `Slide to Node ${next + 1}: ${info.rewards[next].label}`
-    : unlocked >= 20
+    : unlocked >= MAP_NODE_COUNT
       ? "Path complete!"
       : "Earn more income to unlock the next node";
 
+  const claimedPct = Math.round(((info.currentNode + 1) / MAP_NODE_COUNT) * 100);
+
   pageContent.innerHTML = `
-    <div class="page">
+    <div class="page path-page">
       <h2 class="page-title">Path</h2>
       <p class="page-sub">
-        Node ${info.currentNode + 1} / 20 · Lifetime income $${Math.floor(info.lifetimeIncome).toLocaleString()}
+        ${theme.name} · Node ${info.currentNode + 1} / ${MAP_NODE_COUNT}
+        · Lifetime $${Math.floor(info.lifetimeIncome).toLocaleString()}
       </p>
 
       <div class="path-claim-bar">
-        <button id="btn-claim-node" class="primary large" ${canClaim ? "" : "disabled"}>
-          ${canClaim ? "♟️ " + nextLabel : nextLabel}
+        <button id="btn-claim-node" class="primary large path-claim-btn" ${canClaim ? "" : "disabled"}>
+          ${tokenFigure(equipped, equipped.color || "basic", "tiny")}
+          <span>${nextLabel}</span>
         </button>
       </div>
 
-      <div class="path-list">
+      <div class="path-map" data-collection="${theme.id}" style="--map-aspect:${MAP_ASPECT}; --trail:${theme.trail}; --trail-gone:${theme.trailGone}; --node-ring:${theme.nodeRing};">
+        <img class="path-map-bg" src="${mapSrc}" alt="" />
+        <svg class="path-map-trail" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <path class="trail-full" d="${PATH_TRAIL_D}" />
+          <path class="trail-walked" d="${PATH_TRAIL_D}" pathLength="100" />
+        </svg>
         ${nodesHtml}
+        <div class="map-token rarity-${equipped.color || "basic"}" style="left:${tokenPos.x}%;top:${tokenPos.y}%">
+          <img src="${equipped.image}" alt="${equipped.name}" />
+        </div>
+      </div>
+
+      <div class="path-focus ${focusStatus}">
+        <div class="path-focus-kicker">${focusStatus === "claimable" ? "Ready to claim" : focusStatus === "claimed" ? "Claimed" : focusStatus === "unlocked" ? "Unlocked" : "Locked"}</div>
+        <div class="path-focus-title">Node ${focus + 1} · ${focusReward.label}</div>
+        <div class="path-focus-meta">${pathRewardLine(focusReward, focusTarget)}</div>
+        ${focusStatus === "claimable" ? `<button id="btn-claim-focus" class="primary">Claim this node</button>` : ""}
+      </div>
+
+      <div class="path-progress-row">
+        <span>${claimedPct}% of the trail</span>
+        <div class="path-progress"><i style="width:${claimedPct}%"></i></div>
       </div>
     </div>
   `;
 
-  const claimBtn = document.getElementById("btn-claim-node");
-  if (claimBtn && canClaim) {
-    claimBtn.addEventListener("click", () => {
-      const result = claimPathNode();
-      if (result.error) {
-        alert(result.error);
-        return;
-      }
-      let msg = `Node ${result.node} claimed!`;
-      if (result.cashGained) msg += ` +$${result.cashGained}`;
-      if (result.card) msg += ` · Got ${result.card.name} (${result.card.rarity})`;
-      if (result.flag) msg += ` · Unlocked: ${result.flag}`;
-      // brief feedback then re-render
-      updateHeader();
+  const walked = pageContent.querySelector(".trail-walked");
+  if (walked) {
+    const start = info.currentNode;
+    const dash = start <= 0 ? 0 : (start / (MAP_NODE_COUNT - 1)) * 100;
+    walked.style.strokeDasharray = `${dash} 100`;
+  }
+
+  pageContent.querySelectorAll(".map-node").forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectedPathNode = Number(btn.dataset.node);
       renderPath();
     });
+  });
+
+  const claimBtn = document.getElementById("btn-claim-node");
+  if (claimBtn && canClaim) {
+    claimBtn.addEventListener("click", claimCurrentPathNode);
+  }
+  const focusBtn = document.getElementById("btn-claim-focus");
+  if (focusBtn) {
+    focusBtn.addEventListener("click", claimCurrentPathNode);
   }
 }
 
