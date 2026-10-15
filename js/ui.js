@@ -106,15 +106,35 @@ function cardTextOverlay({ name = "", rank = "", earn = null } = {}) {
   `;
 }
 
-function tokenFigure(defOrId, color = "basic", extraClass = "") {
+function tokenSrc(defOrId) {
+  if (typeof defOrId === "object" && defOrId?.image) return defOrId.image;
   const id = typeof defOrId === "string" ? defOrId : (defOrId?.id || "explorer");
+  if (!id || id === "explorer") return "assets/tokens/explorer.jpg";
+  if (id.startsWith("set_")) return `assets/tokens/${id.slice(4)}.jpg`;
+  return `assets/tokens/${id}.jpg`;
+}
+
+function tokenFigure(defOrId, color = "basic", extraClass = "") {
   const name = typeof defOrId === "string" ? "" : (defOrId?.name || "Token");
-  const src = (typeof defOrId === "object" && defOrId?.image) || tokenImageFor(id);
   return `
     <div class="token-figure rarity-${color} ${extraClass}">
-      <img src="${src}" alt="${name}" />
+      <img src="${tokenSrc(defOrId)}" alt="${name}" />
     </div>
   `;
+}
+
+function setProgress(dinoId) {
+  const p = getPlayer();
+  let owned = 0;
+  let maxed = 0;
+  for (const rarity of RARITIES) {
+    const card = p.cards?.[getCardKey(dinoId, rarity)];
+    if (card) {
+      owned++;
+      if (card.rank >= 5) maxed++;
+    }
+  }
+  return { owned, maxed, total: RARITIES.length };
 }
 
 function dietLabel(diet) {
@@ -507,8 +527,9 @@ function renderHome() {
   const discovered = p.totalDiscovered || 0;
   const speciesTotal = DINOSAURS.length;
   const discoverPct = Math.floor((discovered / speciesTotal) * 100);
-  const equippedRaw = p.tokens?.equipped || "explorer";
-  const equipped = equippedRaw.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+  const tokens = getTokensInfo();
+  const equippedToken = tokens.current;
+  const equipped = equippedToken?.name || "The Explorer";
   const incomeLive = p.started && p.incomePerSecond > 0;
   const mapTheme = getMapTheme(DEFAULT_COLLECTION_ID);
   const mapSrc = mapAssetSrc(mapTheme);
@@ -612,7 +633,7 @@ function renderHome() {
         </button>
 
         <button class="room-card tone-token" data-goto="tokens">
-          <div class="room-icon">♟️</div>
+          ${tokenFigure(equippedToken, equippedToken?.color || "basic", "room-token-preview")}
           <div class="room-label">Tokens</div>
           <div class="room-desc">${tokenCount} owned · ${equipped}</div>
         </button>
@@ -1158,59 +1179,79 @@ function renderShop() {
 }
 
 // ----- TOKENS -----
+function unlockedColors(colors) {
+  return RARITIES.filter(r => colors?.[r]);
+}
+
 function renderTokens() {
   const info = getTokensInfo();
   const current = info.current;
+  const color = current.color || "basic";
 
   const list = info.defs.map(def => {
     const unlocked = !!info.unlocked[def.id];
     const isEquipped = info.equipped === def.id;
     const colors = info.colors[def.id] || {};
-    const colorKeys = Object.keys(colors).filter(c => colors[c]);
+    const colorKeys = unlockedColors(colors);
+    const shownColor = isEquipped ? color : (colorKeys[colorKeys.length - 1] || "basic");
+    const progress = def.dinoId ? setProgress(def.dinoId) : null;
 
     if (!unlocked) {
       return `
-        <div class="token-card locked">
-          <div class="token-icon">?</div>
-          <div class="token-name">${def.type === "set" ? "???" : def.name}</div>
+        <article class="token-card locked">
+          ${tokenFigure(def, "basic", "locked")}
+          <div class="token-name">???</div>
           <div class="token-desc">${def.desc}</div>
-          <div class="token-status">Locked</div>
-        </div>
+          ${progress ? `<div class="token-progress"><i style="width:${Math.round((progress.owned / progress.total) * 100)}%"></i></div><div class="token-status">${progress.owned}/${progress.total} prints</div>` : `<div class="token-status">Locked</div>`}
+        </article>
       `;
     }
 
     const colorBtns = colorKeys.map(c => {
-      const active = isEquipped && info.equippedColor === c;
+      const active = isEquipped && color === c;
       return `<button class="color-chip rarity-${c} ${active ? "active" : ""}" data-token="${def.id}" data-color="${c}">${c}</button>`;
     }).join("");
 
     return `
-      <div class="token-card ${isEquipped ? "equipped" : ""}">
-        <div class="token-icon">${def.icon}</div>
+      <article class="token-card ${isEquipped ? "equipped" : ""}">
+        ${tokenFigure(def, shownColor)}
         <div class="token-name">${def.name}</div>
         <div class="token-desc">${def.desc}</div>
-        <div class="token-colors">${colorBtns || "<span class='token-status'>Basic</span>"}</div>
-        ${isEquipped ? '<div class="token-status equipped-label">Equipped</div>' : ""}
-      </div>
+        <div class="token-colors">${colorBtns || "<span class='token-status'>Pewter</span>"}</div>
+        ${isEquipped
+          ? `<div class="token-status equipped-label">On the Path</div>`
+          : `<button class="token-equip-btn" data-equip="${def.id}">Use this piece</button>`}
+      </article>
     `;
   }).join("");
 
   pageContent.innerHTML = `
-    <div class="page">
+    <div class="page tokens-page">
       <h2 class="page-title">Tokens</h2>
       <p class="page-sub">Path pieces · switch anytime</p>
       <div class="equipped-banner">
-        <span class="token-icon">${current.icon}</span>
-        <span>Using <strong>${current.name}</strong> (${current.color})</span>
+        ${tokenFigure(current, color, "banner")}
+        <div>
+          <div class="token-name">${current.name}</div>
+          <div class="token-status">Painted ${color} · sitting on the trail</div>
+        </div>
       </div>
-      <div class="token-list">${list}</div>
-      <p class="hint">Complete all 7 rarities of a dinosaur to unlock its set token. Max Rank 5 on a rarity unlocks that color.</p>
+      <div class="token-grid">${list}</div>
+      <p class="hint">Complete all 7 prints of a dinosaur to unlock its piece. Rank 5 on a rarity unlocks that paint.</p>
     </div>
   `;
 
   pageContent.querySelectorAll(".color-chip").forEach(btn => {
     btn.addEventListener("click", () => {
       const r = tryEquipToken(btn.dataset.token, btn.dataset.color);
+      if (r.error) { alert(r.error); return; }
+      renderTokens();
+    });
+  });
+
+  pageContent.querySelectorAll("[data-equip]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const r = tryEquipToken(btn.dataset.equip, "basic");
       if (r.error) { alert(r.error); return; }
       renderTokens();
     });

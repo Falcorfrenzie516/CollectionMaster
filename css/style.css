@@ -884,6 +884,42 @@ button.danger {
   display: block;
 }
 
+.map-token::after,
+.token-figure::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  opacity: 0;
+}
+
+.map-token.rarity-gold::after,
+.token-figure.rarity-gold::after { background: #d4a017; opacity: 0.5; }
+.map-token.rarity-emerald::after,
+.token-figure.rarity-emerald::after { background: #16a34a; opacity: 0.45; }
+.map-token.rarity-sapphire::after,
+.token-figure.rarity-sapphire::after { background: #2563eb; opacity: 0.48; }
+.map-token.rarity-ruby::after,
+.token-figure.rarity-ruby::after { background: #e11d48; opacity: 0.48; }
+.map-token.rarity-diamond::after,
+.token-figure.rarity-diamond::after {
+  background: linear-gradient(180deg, #e0f2fe, #67e8f9);
+  opacity: 0.55;
+  mix-blend-mode: screen;
+}
+.map-token.rarity-rainbow::after,
+.token-figure.rarity-rainbow::after {
+  background: linear-gradient(120deg, #f59e0b, #22c55e, #3b82f6, #a855f7, #ef4444);
+  opacity: 0.48;
+  animation: tokenRainbow 3.2s linear infinite;
+}
+
+@keyframes tokenRainbow {
+  from { filter: hue-rotate(0deg); }
+  to { filter: hue-rotate(360deg); }
+}
+
 .path-focus {
   margin-top: 0.7rem;
   background: var(--surface);
@@ -1078,26 +1114,6 @@ button.danger {
   opacity: 0;
 }
 
-.token-figure.rarity-gold::after { background: #d4a017; opacity: 0.5; }
-.token-figure.rarity-emerald::after { background: #16a34a; opacity: 0.45; }
-.token-figure.rarity-sapphire::after { background: #2563eb; opacity: 0.48; }
-.token-figure.rarity-ruby::after { background: #e11d48; opacity: 0.48; }
-.token-figure.rarity-diamond::after {
-  background: linear-gradient(180deg, #e0f2fe, #67e8f9);
-  opacity: 0.55;
-  mix-blend-mode: screen;
-}
-.token-figure.rarity-rainbow::after {
-  background: linear-gradient(120deg, #f59e0b, #22c55e, #3b82f6, #a855f7, #ef4444);
-  opacity: 0.48;
-  animation: tokenRainbow 3.2s linear infinite;
-}
-
-@keyframes tokenRainbow {
-  from { filter: hue-rotate(0deg); }
-  to { filter: hue-rotate(360deg); }
-}
-
 .token-figure.locked img {
   filter: brightness(0.2) contrast(0.7);
   opacity: 0.55;
@@ -1119,9 +1135,28 @@ button.danger {
 }
 
 .room-token-preview {
-  width: 3.2rem;
-  height: 3.2rem;
-  margin: 0 auto 0.3rem;
+  width: 3.4rem;
+  height: 4.2rem;
+  margin: 0 0 0.4rem;
+  border-radius: 8px;
+}
+
+.token-progress {
+  height: 5px;
+  border-radius: 99px;
+  background: var(--surface2);
+  overflow: hidden;
+  margin: 0.35rem 0 0.3rem;
+}
+
+.token-progress i {
+  display: block;
+  height: 100%;
+  background: #93c5fd;
+}
+
+.equipped-banner .token-name {
+  margin-bottom: 0.15rem;
 }
 
 .path-claim-btn {
