@@ -69,13 +69,13 @@ function formatRate(n) {
   return v + " /s";
 }
 
-/** Frame art is 784x1168. Slots are locked pixel centers from the approved sample. */
+/** Frame art is 784x1168. Centers measured from the badge interiors. */
 const CARD_FRAME = { w: 784, h: 1168 };
 const CARD_FRAME_RARITIES = ["basic", "gold", "emerald", "sapphire", "ruby", "diamond", "rainbow"];
 const CARD_SLOTS = {
-  rank: { x: 128.9, y: 110.8 },
-  name: { x: 348.5, y: 93.6 },
-  earn: { x: 124.2, y: 1033.6 },
+  rank: { x: 125.8, y: 102.3 },
+  name: { x: 327.3, y: 97.7 },
+  earn: { x: 120.3, y: 1035.2 },
 };
 
 function frameSrc(rarity) {
