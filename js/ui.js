@@ -180,7 +180,7 @@ function renderDinoCard(dino, card = null, opts = {}) {
 
   const fxRank = rank >= 2 && rank <= 5 ? rank : 0;
   const fx = fxRank
-    ? `<img class="dino-fx" src="assets/fx/${dino.id}/r${fxRank}.png" alt="" onerror="this.remove()" />`
+    ? `<img class="dino-fx" src="assets/fx/${dino.id}/r${fxRank}.png?v=2" alt="" onerror="this.remove()" />`
     : "";
 
   return `
