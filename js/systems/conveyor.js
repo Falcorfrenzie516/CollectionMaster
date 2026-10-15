@@ -114,25 +114,35 @@ export function initConveyorState() {
 }
 
 /**
- * Ensure conveyor has up to MAX_OFFERS. Call periodically.
+ * Drop one offer every REFILL_MS, up to MAX_OFFERS.
+ * An empty belt waits for the timer — it does not reset to full.
  */
 export function refillConveyor(conveyor, packsOpened, discount = 0) {
   const now = Date.now();
+  if (!conveyor.lastRefillAt) conveyor.lastRefillAt = now;
 
-  if (conveyor.offers.length === 0) {
-    while (conveyor.offers.length < MAX_OFFERS) {
-      conveyor.offers.push(createOffer(packsOpened, discount));
-    }
-    conveyor.lastRefillAt = now;
-    return true;
+  let changed = false;
+  while (
+    conveyor.offers.length < MAX_OFFERS &&
+    now - conveyor.lastRefillAt >= REFILL_MS
+  ) {
+    conveyor.offers.push(createOffer(packsOpened, discount));
+    conveyor.lastRefillAt += REFILL_MS;
+    changed = true;
   }
 
-  if (conveyor.offers.length >= MAX_OFFERS) return false;
-  if (now - conveyor.lastRefillAt < REFILL_MS) return false;
+  // Don't let a long absence schedule drops in the past forever.
+  if (conveyor.offers.length >= MAX_OFFERS || conveyor.lastRefillAt < now - REFILL_MS) {
+    conveyor.lastRefillAt = now;
+  }
+  return changed;
+}
 
-  conveyor.offers.push(createOffer(packsOpened, discount));
-  conveyor.lastRefillAt = now;
-  return true;
+/** Milliseconds until the next drop, or null if the belt is full. */
+export function nextDropIn(conveyor) {
+  if (!conveyor || conveyor.offers.length >= MAX_OFFERS) return null;
+  const elapsed = Date.now() - (conveyor.lastRefillAt || Date.now());
+  return Math.max(0, REFILL_MS - elapsed);
 }
 
 /**

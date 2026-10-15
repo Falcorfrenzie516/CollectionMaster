@@ -844,12 +844,16 @@ function renderCollections() {
 // ----- CONVEYOR -----
 function renderConveyor() {
   const p = getPlayer();
-  tickConveyor(); // try refill on view
+  tickConveyor();
   const belt = getConveyor();
+  const nextMs = belt.nextDropMs;
+  const nextLabel = nextMs === null
+    ? "Belt full"
+    : `Next pack in ${Math.ceil(nextMs / 1000)}s`;
 
   let offersHtml = "";
   if (!belt.offers.length) {
-    offersHtml = `<p class="empty">Belt is empty — new packs arrive every few seconds.</p>`;
+    offersHtml = `<p class="empty">Belt is empty. ${nextLabel}.</p>`;
   } else {
     offersHtml = belt.offers.map(o => {
       const canBuy = p.started && p.money >= o.price;
@@ -868,11 +872,11 @@ function renderConveyor() {
   pageContent.innerHTML = `
     <div class="page">
       <h2 class="page-title">Conveyor Belt</h2>
-      <p class="page-sub">Packs refill automatically · prices scale with packs opened</p>
+      <p class="page-sub">${belt.offers.length}/${belt.maxOffers} on the belt · ${nextLabel}</p>
       <div class="conveyor-belt">
         ${offersHtml}
       </div>
-      <p class="hint">Bought packs move to the den table (max 20). Open them there.</p>
+      <p class="hint">One pack drops every ${Math.round(belt.dropEveryMs / 1000)}s, up to ${belt.maxOffers}. Buying them all does not refill the belt.</p>
     </div>
   `;
 
@@ -1315,10 +1319,8 @@ setInterval(() => {
     tickIncome();
     updateHeader();
   }
-  const before = getConveyor().offers.length;
   tickConveyor();
-  const after = getConveyor().offers.length;
-  if (p.currentPage === "conveyor" && after !== before) {
+  if (p.currentPage === "conveyor") {
     renderConveyor();
   }
   const expChanged = tickAllExpeditions();

@@ -20,7 +20,10 @@ import {
 import {
   initConveyorState,
   refillConveyor,
-  removeOffer
+  removeOffer,
+  nextDropIn,
+  MAX_OFFERS,
+  REFILL_MS
 } from "./systems/conveyor.js";
 import {
   initExpeditionsState,
@@ -263,7 +266,12 @@ export function tickConveyor() {
 
 export function getConveyor() {
   if (!player.conveyor) player.conveyor = initConveyorState();
-  return player.conveyor;
+  return {
+    ...player.conveyor,
+    maxOffers: MAX_OFFERS,
+    nextDropMs: nextDropIn(player.conveyor),
+    dropEveryMs: REFILL_MS
+  };
 }
 
 export function getTableInfo() {
