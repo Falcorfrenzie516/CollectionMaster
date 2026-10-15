@@ -579,6 +579,22 @@ button.primary:disabled {
   cursor: not-allowed;
 }
 
+button.ghost {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--surface2);
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.ghost:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 button.danger {
   background: var(--danger);
   color: #fecaca;
@@ -1823,8 +1839,58 @@ button.danger {
   color: #e8c27a;
 }
 
-.pack-pile {
-  margin-bottom: 0.9rem;
+.pack-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+}
+
+.pack-actions .primary,
+.pack-actions .ghost {
+  width: 100%;
+}
+
+.open-summary {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  background: rgba(8, 6, 4, 0.62);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.open-summary-card {
+  width: min(100%, 360px);
+  background: var(--surface);
+  border: 1px solid var(--surface2);
+  border-radius: 14px;
+  padding: 1rem 1rem 0.9rem;
+  text-align: center;
+}
+
+.open-summary-card h3 {
+  margin-bottom: 0.55rem;
+}
+
+.open-summary-stats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.open-summary-stats span {
+  background: var(--surface2);
+  border-radius: 999px;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.open-summary-card .primary {
+  width: 100%;
 }
 
 .pile-row {

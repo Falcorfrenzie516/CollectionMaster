@@ -300,6 +300,65 @@ function flushMaxedSortPile(state) {
   return sold;
 }
 
+export function openAllTablePacks() {
+  const table = ensureTable(player);
+  if (!table.packs.length) return { error: "No packs on the table" };
+  const room = MAX_SORT_PILE - table.sortPile.length;
+  const canOpen = Math.floor(room / 4);
+  if (canOpen < 1) {
+    return { error: "Sort pile is full. File some cards first." };
+  }
+
+  const toOpen = Math.min(canOpen, table.packs.length);
+  const opened = [];
+  const kept = [];
+  const sold = [];
+
+  for (let i = 0; i < toOpen; i++) {
+    const sealed = table.packs.shift();
+    const cards = openPack({
+      isStarter: sealed.isStarter,
+      filter: sealed.filter,
+      oddsBoost: sealed.oddsBoost,
+      luck: getPackLuck(player)
+    }).map((card, n) => ({
+      ...card,
+      uid: "card_" + Date.now().toString(36) + "_" + i + "_" + n + "_" + Math.random().toString(36).slice(2, 6)
+    }));
+
+    for (const card of cards) {
+      if (classifySortCard(player, card) === "maxed") {
+        sold.push(addCardsToCollection(player, [card])[0]);
+      } else {
+        kept.push(card);
+      }
+    }
+    opened.push(sealed);
+    player.packsOpened++;
+  }
+
+  table.sortPile.push(...kept);
+  sold.push(...flushMaxedSortPile(player));
+  syncAchievements(player);
+  saveGame(player);
+
+  const reasons = { first: 0, dup: 0, fifth: 0 };
+  for (const card of kept) {
+    const kind = classifySortCard(player, card);
+    if (reasons[kind] !== undefined) reasons[kind]++;
+  }
+
+  return {
+    opened: opened.length,
+    remaining: table.packs.length,
+    kept: kept.length,
+    sold: sold.length,
+    reasons,
+    stoppedForSort: table.packs.length > 0,
+    player
+  };
+}
+
 export function openTablePack() {
   const table = ensureTable(player);
   if (!table.packs.length) return { error: "No packs on the table" };
@@ -571,6 +630,7 @@ if (typeof window !== "undefined") {
     buyConveyorOffer,
     getTableInfo,
     openTablePack,
+    openAllTablePacks,
     fileSortCard,
     autoSortTable,
     tickConveyor,

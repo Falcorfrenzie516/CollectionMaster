@@ -24,6 +24,7 @@ import {
   tryBuyShopItem,
   getTableInfo,
   openTablePack,
+  openAllTablePacks,
   fileSortCard,
   autoSortTable
 } from "./main.js";
@@ -456,9 +457,14 @@ function renderDenTable(p) {
 
       <div class="pack-pile">
         <div class="pile-row">${packsHtml}</div>
-        <button id="btn-open-table-pack" class="primary large" ${info.packCount ? "" : "disabled"}>
-          Open pack on the table
-        </button>
+        <div class="pack-actions">
+          <button id="btn-open-table-pack" class="primary" ${info.packCount ? "" : "disabled"}>
+            Open one
+          </button>
+          <button id="btn-open-all" class="ghost" ${info.packCount ? "" : "disabled"}>
+            ${info.packCount > 1 ? `Open all · skip (${info.packCount})` : "Open · skip"}
+          </button>
+        </div>
       </div>
 
       <div class="sort-pile">
@@ -475,6 +481,35 @@ function renderDenTable(p) {
   `;
 }
 
+function showOpenSummary(result) {
+  const existing = document.getElementById("open-summary");
+  if (existing) existing.remove();
+  const overlay = document.createElement("div");
+  overlay.id = "open-summary";
+  overlay.className = "open-summary";
+  const stopped = result.stoppedForSort
+    ? `<p class="hint">${result.remaining} pack${result.remaining === 1 ? "" : "s"} left — sort pile is full.</p>`
+    : "";
+  overlay.innerHTML = `
+    <div class="open-summary-card">
+      <h3>Opened ${result.opened} pack${result.opened === 1 ? "" : "s"}</h3>
+      <div class="open-summary-stats">
+        <span>${result.reasons.first} new</span>
+        <span>${result.reasons.dup} duplicates</span>
+        <span>${result.reasons.fifth} rank-ups</span>
+        <span>${result.sold} sold</span>
+      </div>
+      ${stopped}
+      <button id="btn-summary-done" class="primary">To the sort pile</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector("#btn-summary-done").addEventListener("click", () => overlay.remove());
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) overlay.remove();
+  });
+}
+
 function bindDenTable() {
   function beginOpen() {
     const result = openTablePack();
@@ -488,8 +523,21 @@ function bindDenTable() {
     }, result.sold || []);
   }
 
+  function beginOpenAll() {
+    const result = openAllTablePacks();
+    if (result.error) {
+      alert(result.error);
+      return;
+    }
+    updateHeader();
+    renderHome();
+    showOpenSummary(result);
+  }
+
   const openBtn = document.getElementById("btn-open-table-pack");
   if (openBtn) openBtn.addEventListener("click", beginOpen);
+  const openAllBtn = document.getElementById("btn-open-all");
+  if (openAllBtn) openAllBtn.addEventListener("click", beginOpenAll);
   pageContent.querySelectorAll("[data-open-pack]").forEach(btn => {
     btn.addEventListener("click", beginOpen);
   });
